@@ -1,0 +1,21 @@
+# Contributing Guidelines
+
+Thank you for considering contributing to this project!
+
+## How to Contribute
+
+1. Fork the repository and create your branch from `main`.
+2. Make your changes with clear, descriptive commit messages.
+3. Ensure your code passes all tests and follows the project's style guidelines.
+4. Submit a pull request with a detailed description of your changes.
+
+## Reporting Issues
+
+- Please use the issue tracker to report bugs or suggest features.
+- Provide as much detail as possible to help us understand and address your issue.
+
+## Code of Conduct
+
+By participating, you agree to abide by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+Thank you for helping make this project better!
