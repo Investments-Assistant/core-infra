@@ -1,3 +1,3 @@
-# core-infra
+# general-infra
 
-Infrastructure as Code for Investments Assistant project
+IaC common to all repositories in the Investments Assistant project.

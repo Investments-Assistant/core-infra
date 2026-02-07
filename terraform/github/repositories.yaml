@@ -1,0 +1,14 @@
+core-infra:
+  description: "Infrastructure as Code for Investments Assistant project"
+  gitignore_template: "Terraform"
+  terraform_state: true
+
+# terraform-modules:
+#   description: "Reusable Terraform modules for Investments Assistant project"
+#   gitignore_template: "Terraform"
+#   terraform_state: false
+
+investments-assistant:
+  description: "Main application codebase for Investments Assistant project"
+  gitignore_template: "Python"
+  terraform_state: false
