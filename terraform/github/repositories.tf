@@ -1,44 +1,5 @@
-resource "github_organization_settings" "github_organization_settings" {
-  billing_email = var.github_organization_email
-  email         = var.github_organization_email
-  name          = var.github_organization_name
-  description   = var.github_organization_description
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "github_membership" "owners" {
-  for_each = var.org_owners
-  username = each.value
-  role     = "admin"
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "github_team" "core" {
-  name        = "core"
-  description = "Core maintainers"
-  privacy     = "closed"
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "github_team_membership" "core_owners" {
-  for_each = var.org_owners
-  team_id  = github_team.core.id
-  username = each.value
-  role     = "maintainer"
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 resource "github_repository" "repositories" {
-  for_each = local.repositories
+  for_each               = local.repositories
   name                   = each.value.name
   description            = each.value.description
   gitignore_template     = each.value.gitignore_template
@@ -64,7 +25,7 @@ resource "github_repository" "repositories" {
 }
 
 resource "github_repository_file" "code_of_conduct" {
-  for_each = github_repository.repositories
+  for_each            = github_repository.repositories
   repository          = each.value.name
   file                = "CODE_OF_CONDUCT"
   content             = file("${path.module}/files_templates/CODE_OF_CONDUCT_template")
@@ -75,7 +36,7 @@ resource "github_repository_file" "code_of_conduct" {
 }
 
 resource "github_repository_file" "codeowners" {
-  for_each = github_repository.repositories
+  for_each            = github_repository.repositories
   repository          = each.value.name
   file                = "CODEOWNERS"
   content             = templatefile("${path.module}/files_templates/CODEOWNERS_template", {
@@ -88,7 +49,7 @@ resource "github_repository_file" "codeowners" {
 }
 
 resource "github_repository_file" "contributing" {
-  for_each = github_repository.repositories
+  for_each            = github_repository.repositories
   repository          = each.value.name
   file                = "CONTRIBUTING"
   content             = file("${path.module}/files_templates/CONTRIBUTING_template")
@@ -99,7 +60,7 @@ resource "github_repository_file" "contributing" {
 }
 
 resource "github_repository_file" "license" {
-  for_each = github_repository.repositories
+  for_each            = github_repository.repositories
   repository          = each.value.name
   file                = "LICENSE"
   content             = file("${path.module}/files_templates/LICENSE_template")
@@ -110,7 +71,7 @@ resource "github_repository_file" "license" {
 }
 
 resource "github_repository_file" "readme" {
-  for_each = github_repository.repositories
+  for_each            = github_repository.repositories
   repository          = each.value.name
   file                = "README.md"
   content             = templatefile("${path.module}/files_templates/README_template", {

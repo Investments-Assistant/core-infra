@@ -1,0 +1,88 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit secrets.
+
+# ── Organization ──────────────────────────────────────────────────────────────
+
+github_organization_email       = "your-email@example.com"
+github_organization_name        = "Investments-Assistant"
+github_organization_description = "AI-powered investment assistant"
+
+org_owners = ["your-github-username"]
+
+# ── Repository-level secrets (available to every workflow) ────────────────────
+# These are not environment-scoped — e.g. SonarCloud runs on every push.
+
+repo_secrets = {
+  SONAR_TOKEN = "sqp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+
+# ── DEV environment ───────────────────────────────────────────────────────────
+
+dev_variables = {
+  # Override any default variable set in environments.tf for dev
+  LLM_BACKEND   = "llama_cpp"
+  LLM_MODEL_PATH = "/app/models/qwen2.5-7b-instruct-q4_k_m.gguf"
+  NEWSLETTER_EMAIL_USER = "your-newsletter-email@gmail.com"
+}
+
+dev_secrets = {
+  # PostgreSQL
+  DATABASE_URL = "postgresql+asyncpg://user:password@dev-db-host:5432/investments"
+
+  # Alpaca (paper trading for dev)
+  ALPACA_API_KEY    = "PK_dev_xxxxxxxxxxxxxxxxxxxx"
+  ALPACA_SECRET_KEY = "dev_secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # Interactive Brokers (TWS/Gateway)
+  IBKR_HOST = "127.0.0.1"
+  IBKR_PORT = "7497"
+
+  # Coinbase Advanced Trade API
+  COINBASE_API_KEY    = "organizations/xxx/apiKeys/yyy"
+  COINBASE_API_SECRET = "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
+
+  # Binance
+  BINANCE_API_KEY    = "dev_binance_api_key_xxxxxxxxxxxxxxxxxxxx"
+  BINANCE_SECRET_KEY = "dev_binance_secret_xxxxxxxxxxxxxxxxxxxx"
+
+  # News sources
+  GUARDIAN_API_KEY = "your-guardian-api-key"
+
+  # Email newsletter (IMAP)
+  NEWSLETTER_EMAIL_PASSWORD = "your-app-password"
+}
+
+# ── PROD environment ──────────────────────────────────────────────────────────
+
+prod_variables = {
+  LLM_BACKEND    = "llama_cpp"
+  LLM_MODEL_PATH = "/app/models/qwen2.5-7b-instruct-q4_k_m.gguf"
+  NEWSLETTER_EMAIL_USER = "your-newsletter-email@gmail.com"
+}
+
+prod_secrets = {
+  # PostgreSQL
+  DATABASE_URL = "postgresql+asyncpg://user:password@prod-db-host:5432/investments"
+
+  # Alpaca (live trading for prod)
+  ALPACA_API_KEY    = "PK_live_xxxxxxxxxxxxxxxxxxxx"
+  ALPACA_SECRET_KEY = "live_secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # Interactive Brokers
+  IBKR_HOST = "127.0.0.1"
+  IBKR_PORT = "7496"
+
+  # Coinbase
+  COINBASE_API_KEY    = "organizations/xxx/apiKeys/yyy"
+  COINBASE_API_SECRET = "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
+
+  # Binance
+  BINANCE_API_KEY    = "prod_binance_api_key_xxxxxxxxxxxxxxxxxxxx"
+  BINANCE_SECRET_KEY = "prod_binance_secret_xxxxxxxxxxxxxxxxxxxx"
+
+  # News sources
+  GUARDIAN_API_KEY = "your-guardian-api-key"
+
+  # Email newsletter (IMAP)
+  NEWSLETTER_EMAIL_PASSWORD = "your-app-password"
+}
