@@ -9,7 +9,6 @@ resource "github_repository" "repositories" {
   allow_merge_commit     = false
   allow_rebase_merge     = false
   delete_branch_on_merge = true
-  vulnerability_alerts   = true
   allow_update_branch    = true
   security_and_analysis {
     secret_scanning {
@@ -24,8 +23,19 @@ resource "github_repository" "repositories" {
   }
 }
 
+resource "github_repository_vulnerability_alerts" "repositories" {
+  for_each   = local.repositories
+  repository = each.value.name
+  enabled    = true
+
+  depends_on = [github_repository.repositories]
+}
+
 resource "github_repository_file" "code_of_conduct" {
-  for_each            = github_repository.repositories
+  for_each = {
+    for name, repo in github_repository.repositories :
+    name => repo if local.repositories[name].init_files.code_of_conduct
+  }
   repository          = each.value.name
   file                = "CODE_OF_CONDUCT"
   content             = file("${path.module}/files_templates/CODE_OF_CONDUCT_template")
@@ -36,7 +46,10 @@ resource "github_repository_file" "code_of_conduct" {
 }
 
 resource "github_repository_file" "codeowners" {
-  for_each            = github_repository.repositories
+  for_each = {
+    for name, repo in github_repository.repositories :
+    name => repo if local.repositories[name].init_files.codeowners
+  }
   repository          = each.value.name
   file                = "CODEOWNERS"
   content             = templatefile("${path.module}/files_templates/CODEOWNERS_template", {
@@ -49,7 +62,10 @@ resource "github_repository_file" "codeowners" {
 }
 
 resource "github_repository_file" "contributing" {
-  for_each            = github_repository.repositories
+  for_each = {
+    for name, repo in github_repository.repositories :
+    name => repo if local.repositories[name].init_files.contributing
+  }
   repository          = each.value.name
   file                = "CONTRIBUTING"
   content             = file("${path.module}/files_templates/CONTRIBUTING_template")
@@ -60,7 +76,10 @@ resource "github_repository_file" "contributing" {
 }
 
 resource "github_repository_file" "license" {
-  for_each            = github_repository.repositories
+  for_each = {
+    for name, repo in github_repository.repositories :
+    name => repo if local.repositories[name].init_files.license
+  }
   repository          = each.value.name
   file                = "LICENSE"
   content             = file("${path.module}/files_templates/LICENSE_template")
@@ -71,7 +90,10 @@ resource "github_repository_file" "license" {
 }
 
 resource "github_repository_file" "readme" {
-  for_each            = github_repository.repositories
+  for_each = {
+    for name, repo in github_repository.repositories :
+    name => repo if local.repositories[name].init_files.readme
+  }
   repository          = each.value.name
   file                = "README.md"
   content             = templatefile("${path.module}/files_templates/README_template", {

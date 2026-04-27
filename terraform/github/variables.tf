@@ -53,3 +53,17 @@ variable "repo_secrets" {
   sensitive   = true
   default     = {}
 }
+
+# ── Repository boilerplate files ──────────────────────────────────────────────
+
+variable "repo_init_files" {
+  description = "Per-repository flags controlling which boilerplate files Terraform manages."
+  type = map(object({
+    code_of_conduct = optional(bool)
+    codeowners      = optional(bool)
+    contributing    = optional(bool)
+    license         = optional(bool)
+    readme          = optional(bool)
+  }))
+  default = {}
+}

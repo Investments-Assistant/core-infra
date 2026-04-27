@@ -6,6 +6,13 @@ locals {
       description        = try(repo.description, null)
       gitignore_template = try(repo.gitignore_template, null)
       terraform_state    = try(repo.terraform_state, false)
+      init_files = {
+        code_of_conduct = try(var.repo_init_files[name].code_of_conduct == true, false)
+        codeowners      = try(var.repo_init_files[name].codeowners == true, false)
+        contributing    = try(var.repo_init_files[name].contributing == true, false)
+        license         = try(var.repo_init_files[name].license == true, false)
+        readme          = try(var.repo_init_files[name].readme == true, false)
+      }
     }
   }
 }
@@ -52,11 +59,11 @@ locals {
   # Flatten {env -> {name -> value}} into a unique keyed map for for_each
   env_secrets_flat = merge([
     for env_name, env_cfg in local.environments : {
-      for secret_name, secret_value in env_cfg.secrets :
+      for secret_name in nonsensitive(keys(env_cfg.secrets)) :
       "${env_name}__${secret_name}" => {
         environment = env_name
         name        = secret_name
-        value       = secret_value
+        value       = env_cfg.secrets[secret_name]
       }
     }
   ]...)
@@ -73,10 +80,10 @@ locals {
   ]...)
 
   repo_secrets_flat = {
-    for secret_name, secret_value in var.repo_secrets :
+    for secret_name in nonsensitive(keys(var.repo_secrets)) :
     secret_name => {
       name  = secret_name
-      value = secret_value
+      value = var.repo_secrets[secret_name]
     }
   }
 }

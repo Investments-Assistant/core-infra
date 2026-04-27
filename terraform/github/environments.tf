@@ -42,13 +42,16 @@ resource "github_repository_environment_deployment_policy" "dev_any_branch" {
 # ── Environment secrets ────────────────────────────────────────────────────────
 
 resource "github_actions_environment_secret" "app_secrets" {
-  for_each        = local.env_secrets_flat
-  repository      = local.app_repo
-  environment     = each.value.environment
-  secret_name     = each.value.name
-  plaintext_value = each.value.value
+  for_each    = local.env_secrets_flat
+  repository  = local.app_repo
+  environment = each.value.environment
+  secret_name = each.value.name
+  value       = each.value.value
 
   depends_on = [github_repository_environment.app_envs]
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # ── Environment variables ──────────────────────────────────────────────────────
@@ -66,10 +69,13 @@ resource "github_actions_environment_variable" "app_variables" {
 # ── Repository-level secrets (shared across all workflows/environments) ────────
 
 resource "github_actions_secret" "repo_secrets" {
-  for_each        = local.repo_secrets_flat
-  repository      = local.app_repo
-  secret_name     = each.value.name
-  plaintext_value = each.value.value
+  for_each    = local.repo_secrets_flat
+  repository  = local.app_repo
+  secret_name = each.value.name
+  value       = each.value.value
 
   depends_on = [github_repository.repositories]
+  lifecycle {
+    prevent_destroy = true
+  }
 }
