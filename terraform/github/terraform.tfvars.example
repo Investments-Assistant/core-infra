@@ -39,7 +39,7 @@ dev_secrets = {
 
   # Coinbase Advanced Trade API
   COINBASE_API_KEY    = "organizations/xxx/apiKeys/yyy"
-  COINBASE_API_SECRET = "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
+  COINBASE_API_SECRET = "<paste PEM private key here, replacing newlines with \\n>"
 
   # Binance
   BINANCE_API_KEY    = "dev_binance_api_key_xxxxxxxxxxxxxxxxxxxx"
@@ -74,7 +74,7 @@ prod_secrets = {
 
   # Coinbase
   COINBASE_API_KEY    = "organizations/xxx/apiKeys/yyy"
-  COINBASE_API_SECRET = "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
+  COINBASE_API_SECRET = "<paste PEM private key here, replacing newlines with \\n>"
 
   # Binance
   BINANCE_API_KEY    = "prod_binance_api_key_xxxxxxxxxxxxxxxxxxxx"

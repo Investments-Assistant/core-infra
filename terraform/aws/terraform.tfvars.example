@@ -1,0 +1,9 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit secrets.
+
+# ── AWS module ────────────────────────────────────────────────────────────────
+# Name of the S3 bucket that stores Terraform state for all modules.
+# Must be globally unique. Only required during the initial bootstrap of the
+# AWS module; after the bucket exists you won't need to change this value.
+
+prod_tf_state_bucket_name = "invass-core-infra-terraform-state-YYYYMMDDHHMMSS"
