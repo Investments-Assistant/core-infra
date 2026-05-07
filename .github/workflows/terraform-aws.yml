@@ -1,0 +1,41 @@
+name: Terraform — AWS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - terraform/aws/**
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  apply:
+    name: Apply AWS Infrastructure
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.13"
+
+      - name: Write tfvars
+        run: printf '%s' "$TFVARS_CONTENT" > terraform/aws/terraform.tfvars
+        env:
+          TFVARS_CONTENT: ${{ secrets.AWS_TFVARS }}
+
+      - name: Init
+        run: terraform -chdir=terraform/aws init
+
+      - name: Select workspace
+        run: terraform -chdir=terraform/aws workspace select -or-create prod
+
+      - name: Apply
+        run: terraform -chdir=terraform/aws apply -auto-approve -var-file=terraform.tfvars

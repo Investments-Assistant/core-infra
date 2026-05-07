@@ -1,0 +1,20 @@
+name: Terraform — All
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - terraform/**
+  workflow_dispatch:
+
+jobs:
+  aws:
+    name: AWS
+    uses: ./.github/workflows/terraform-aws.yml
+    secrets: inherit
+
+  github:
+    name: GitHub
+    uses: ./.github/workflows/terraform-github.yml
+    secrets: inherit
+    needs: aws
