@@ -12,3 +12,8 @@ investments-assistant:
   description: "Main application codebase for Investments Assistant project"
   gitignore_template: "Python"
   terraform_state: false
+
+investments-assistant-k8s:
+  description: "Kubernetes manifests and Helm charts for Investments Assistant project"
+  gitignore_template: "Python"
+  terraform_state: true
