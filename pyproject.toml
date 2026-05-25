@@ -2,18 +2,18 @@
 name = "general-infra"
 version = "0.0.1"
 description = "General infrastructure code for the Investments Assistant."
-authors = [
-    { name = "lupirex", email = "investments.assistant.27@gmail.com" }
-]
-license = {text = "AGPL-3.0-or-later"}
-keywords = [ "Terraform", "IaC" ]
+authors = [{ name = "lupirex", email = "investments.assistant.27@gmail.com" }]
+license = "AGPL-3.0-or-later"
+keywords = ["Terraform", "OpenTofu", "IaC"]
 readme = "README.md"
-dependencies = [
-    "pre-commit (>=4.5.1)"
-]
+requires-python = ">=3.12"
+dependencies = []
 
 [project.urls]
 repository = "https://github.com/Investments-Assistant/general-infra"
+
+[dependency-groups]
+dev = ["pre-commit>=4.5.1"]
 
 [tool.poetry]
 package-mode = false

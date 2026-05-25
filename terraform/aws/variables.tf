@@ -1,4 +1,4 @@
-variable "prod_tf_state_bucket_name" {
-    description = "The name of the S3 bucket to store Terraform state for the production environment."
-    type        = string
+variable "tf_state_buckets_names" {
+  description = "The name of the S3 buckets to store Terraform states."
+  type        = list(string)
 }

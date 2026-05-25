@@ -63,10 +63,10 @@ install: ## Install local dev tools (pre-commit hooks)
 init: aws-init github-init ## Initialise all Terraform modules
 
 aws-init: ## Initialise the AWS module (terraform init -upgrade)
-	terraform -chdir=$(AWS_DIR) init -upgrade
+	terraform -chdir=$(AWS_DIR) init -upgrade -reconfigure
 
 github-init: ## Initialise the GitHub module (terraform init -upgrade)
-	terraform -chdir=$(GH_DIR) init -upgrade
+	terraform -chdir=$(GH_DIR) init -upgrade -reconfigure
 
 # ── Plan ─────────────────────────────────────────────────────────────────────
 

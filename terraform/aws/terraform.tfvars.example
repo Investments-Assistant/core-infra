@@ -6,4 +6,4 @@
 # Must be globally unique. Only required during the initial bootstrap of the
 # AWS module; after the bucket exists you won't need to change this value.
 
-prod_tf_state_bucket_name = "invass-core-infra-terraform-state-YYYYMMDDHHMMSS"
+tf_state_buckets_names = ["invass-core-infra-terraform-state-YYYYMMDDHHMMSS", "invass-investments-assistant-k8s-terraform-state-YYYYMMDDHHMMSS"]

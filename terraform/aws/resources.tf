@@ -1,20 +1,26 @@
-resource "aws_s3_bucket" "prod_tf_state_bucket" {
-  bucket = var.prod_tf_state_bucket_name
+resource "aws_s3_bucket" "tf_states_buckets" {
+  for_each = toset(var.tf_state_buckets_names)
+  bucket   = each.value
+  lifecycle {
+    prevent_destroy = true
+  }
   tags = {
-    Terraform_State        = true
-    Environment = "prod"
+    Terraform_State = true
+    Environment     = "prod"
   }
 }
 
 resource "aws_s3_bucket_versioning" "prod_tf_state_bucket_versioning" {
-  bucket = aws_s3_bucket.prod_tf_state_bucket.id
+  for_each = aws_s3_bucket.tf_states_buckets
+  bucket   = each.value.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
-  bucket = aws_s3_bucket.prod_tf_state_bucket.id
+  for_each = aws_s3_bucket.tf_states_buckets
+  bucket   = each.value.id
   rule {
     bucket_key_enabled = true
     apply_server_side_encryption_by_default {
@@ -24,7 +30,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
 }
 
 resource "aws_s3_bucket_public_access_block" "public_access" {
-  bucket = aws_s3_bucket.prod_tf_state_bucket.id
+  for_each                = aws_s3_bucket.tf_states_buckets
+  bucket                  = each.value.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -32,13 +39,14 @@ resource "aws_s3_bucket_public_access_block" "public_access" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "aws_s3_terraform_state_bucket_lifecycle_configuration" {
-  bucket = aws_s3_bucket.prod_tf_state_bucket.id
+  for_each = aws_s3_bucket.tf_states_buckets
+  bucket   = each.value.id
   rule {
-    id = "expire-old-versions"
+    id     = "expire-old-versions"
     status = "Enabled"
     noncurrent_version_transition {
       noncurrent_days = 30
-      storage_class = "INTELLIGENT_TIERING"
+      storage_class   = "INTELLIGENT_TIERING"
     }
   }
 }
