@@ -1,17 +1,17 @@
 # core-infra
 
-IaC for the Investments Assistant project. Two Terraform modules manage all shared infrastructure:
+IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared infrastructure:
 
 | Module | What it owns |
 | --- | --- |
-| `terraform/aws` | S3 bucket for remote Terraform state |
+| `terraform/aws` | S3 bucket for remote OpenTofu state |
 | `terraform/github` | GitHub org, repositories, teams, environments, secrets |
 
 ---
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) ≥ 1.13
+- [OpenTofu](https://opentofu.org/docs/intro/install/) ≥ 1.10
 - [tflint](https://github.com/terraform-linters/tflint)
 - [Poetry](https://python-poetry.org/) (for pre-commit)
 - AWS credentials configured for the `investments-assistant-admin` profile
@@ -44,7 +44,7 @@ make apply         # apply all changes (asks for confirmation)
 make aws-plan      # plan only the AWS module
 make github-apply  # apply only the GitHub module
 
-make fmt           # auto-format Terraform code in place
+make fmt           # auto-format OpenTofu code in place
 make validate      # validate both modules
 make lint          # run tflint on both modules
 make pre-commit    # run all pre-commit hooks
@@ -70,7 +70,7 @@ make github-plan TFVARS=staging.tfvars
 
 ### `terraform/aws`
 
-Bootstraps the S3 bucket used as a Terraform state backend by both modules. Only needs to be applied once. Requires AWS credentials with S3 permissions.
+Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks. Only needs to be applied once. Requires AWS credentials with S3 permissions.
 
 ### `terraform/github`
 
@@ -82,7 +82,7 @@ Secrets are supplied via `terraform/github/terraform.tfvars` (gitignored). See `
 
 ## State backend
 
-Both modules store state in the S3 bucket created by the AWS module, with server-side encryption (KMS) and versioning enabled. The state files are:
+Both stacks store state in the S3 bucket created by the AWS stack, with server-side encryption (KMS), versioning, and S3 lock files enabled. The state files are:
 
 | Module | S3 key |
 | --- | --- |

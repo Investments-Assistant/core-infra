@@ -57,7 +57,7 @@ variable "repo_secrets" {
 # ── Repository boilerplate files ──────────────────────────────────────────────
 
 variable "repo_init_files" {
-  description = "Per-repository flags controlling which boilerplate files Terraform manages."
+  description = "Per-repository flags controlling which boilerplate files OpenTofu manages."
   type = map(object({
     code_of_conduct = optional(bool)
     codeowners      = optional(bool)

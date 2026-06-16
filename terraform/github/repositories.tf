@@ -50,9 +50,9 @@ resource "github_repository_file" "codeowners" {
     for name, repo in github_repository.repositories :
     name => repo if local.repositories[name].init_files.codeowners
   }
-  repository          = each.value.name
-  file                = "CODEOWNERS"
-  content             = templatefile("${path.module}/files_templates/CODEOWNERS_template", {
+  repository = each.value.name
+  file       = "CODEOWNERS"
+  content = templatefile("${path.module}/files_templates/CODEOWNERS_template", {
     codeowners = join(", ", var.org_owners)
   })
   overwrite_on_create = true
@@ -94,9 +94,9 @@ resource "github_repository_file" "readme" {
     for name, repo in github_repository.repositories :
     name => repo if local.repositories[name].init_files.readme
   }
-  repository          = each.value.name
-  file                = "README.md"
-  content             = templatefile("${path.module}/files_templates/README_template", {
+  repository = each.value.name
+  file       = "README.md"
+  content = templatefile("${path.module}/files_templates/README_template", {
     repository_name = each.value.name
     description     = local.repositories[each.value.name].description
   })

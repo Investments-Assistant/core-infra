@@ -89,20 +89,25 @@ repos:
         name: Python - Ruff Formatter
         description: Format Python code using Ruff
 
-  # TERRAFORM
+  # OPENTOFU
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: "v1.105.0"
     hooks:
       - id: terraform_fmt
-        name: Terraform - Formatter
-        description: "Run 'terraform fmt' to format Terraform code."
-      - id: terraform_validate
-        name: Terraform - Validator
-        description: "Run 'terraform validate' to validate Terraform code."
-      - id: terraform_tflint
-        name: Terraform - TFLint
-        description: "Run 'tflint' to lint Terraform code."
+        name: OpenTofu - Formatter
+        description: "Run 'tofu fmt' to format OpenTofu code."
         args:
+          - --hook-config=--tf-path=tofu
+      - id: terraform_validate
+        name: OpenTofu - Validator
+        description: "Run 'tofu validate' to validate OpenTofu code."
+        args:
+          - --hook-config=--tf-path=tofu
+      - id: terraform_tflint
+        name: OpenTofu - TFLint
+        description: "Run 'tflint' to lint OpenTofu code."
+        args:
+          - --hook-config=--tf-path=tofu
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
 
   # DOCKER

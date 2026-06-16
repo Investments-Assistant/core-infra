@@ -1,4 +1,4 @@
-name: Terraform — All
+name: OpenTofu — All
 
 on:
   push:

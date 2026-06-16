@@ -1,13 +1,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Core Infrastructure — Makefile
 #
-# Wraps the two Terraform modules (aws, github) with a consistent interface.
+# Wraps the two OpenTofu stacks (aws, github) with a consistent interface.
 #
-# Prerequisites: terraform, tflint, pre-commit, poetry
+# Prerequisites: tofu, tflint, pre-commit, poetry
 #
 # Quick start:
 #   make install         # install local dev tooling (pre-commit)
-#   make init            # terraform init on both modules
+#   make init            # tofu init on both stacks
 #   make plan            # show pending changes (no writes)
 #   make apply           # apply changes (interactive confirmation required)
 #   make help            # full target list
@@ -15,7 +15,7 @@
 # Variables (override on the command line):
 #   AWS_PROFILE   – AWS credential profile used for S3 state backend
 #                   default: investments-assistant-admin
-#   TF_WORKSPACE  – Terraform workspace to select before plan/apply/destroy
+#   TF_WORKSPACE  – OpenTofu workspace to select before plan/apply/destroy
 #                   default: prod
 #   TFVARS        – var-file name (relative to each module directory)
 #                   default: terraform.tfvars
@@ -23,6 +23,7 @@
 
 AWS_PROFILE  ?= investments-assistant-admin
 TF_WORKSPACE ?= prod
+TOFU         ?= tofu
 AWS_DIR      := terraform/aws
 GH_DIR       := terraform/github
 TFVARS       := terraform.tfvars
@@ -50,6 +51,7 @@ help: ## Show this help
 	@printf "\nVariables (override with make <target> VAR=value):\n"
 	@printf "  \033[33m%-20s\033[0m %s\n" "AWS_PROFILE"  "$(AWS_PROFILE)"
 	@printf "  \033[33m%-20s\033[0m %s\n" "TF_WORKSPACE" "$(TF_WORKSPACE)"
+	@printf "  \033[33m%-20s\033[0m %s\n" "TOFU"         "$(TOFU)"
 	@printf "  \033[33m%-20s\033[0m %s\n" "TFVARS"       "$(TFVARS)"
 
 # ── Dev tooling ───────────────────────────────────────────────────────────────
@@ -60,67 +62,67 @@ install: ## Install local dev tools (pre-commit hooks)
 
 # ── Init ─────────────────────────────────────────────────────────────────────
 
-init: aws-init github-init ## Initialise all Terraform modules
+init: aws-init github-init ## Initialise all OpenTofu stacks
 
-aws-init: ## Initialise the AWS module (terraform init -upgrade)
-	terraform -chdir=$(AWS_DIR) init -upgrade -reconfigure
+aws-init: ## Initialise the AWS stack (tofu init -upgrade)
+	$(TOFU) -chdir=$(AWS_DIR) init -upgrade -reconfigure
 
-github-init: ## Initialise the GitHub module (terraform init -upgrade)
-	terraform -chdir=$(GH_DIR) init -upgrade -reconfigure
+github-init: ## Initialise the GitHub stack (tofu init -upgrade)
+	$(TOFU) -chdir=$(GH_DIR) init -upgrade -reconfigure
 
 # ── Plan ─────────────────────────────────────────────────────────────────────
 
 plan: aws-plan github-plan ## Show pending changes for all modules (no writes)
 
 aws-plan: ## Show pending changes for the AWS module
-	terraform -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(AWS_DIR) plan -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(AWS_DIR) plan -var-file=$(TFVARS)
 
 github-plan: ## Show pending changes for the GitHub module
-	terraform -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(GH_DIR) plan -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(GH_DIR) plan -var-file=$(TFVARS)
 
 # ── Apply ─────────────────────────────────────────────────────────────────────
 
 apply: aws-apply github-apply ## Apply all modules (interactive confirmation required)
 
 aws-apply: ## Apply the AWS module (interactive confirmation required)
-	terraform -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(AWS_DIR) apply -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(AWS_DIR) apply -var-file=$(TFVARS)
 
 github-apply: ## Apply the GitHub module (interactive confirmation required)
-	terraform -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(GH_DIR) apply -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(GH_DIR) apply -var-file=$(TFVARS)
 
 # ── Destroy ───────────────────────────────────────────────────────────────────
 
 aws-destroy: ## DANGER: Destroy all AWS-managed resources
-	terraform -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(AWS_DIR) destroy -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(AWS_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(AWS_DIR) destroy -var-file=$(TFVARS)
 
 github-destroy: ## DANGER: Destroy all GitHub-managed resources
-	terraform -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
-	terraform -chdir=$(GH_DIR) destroy -var-file=$(TFVARS)
+	$(TOFU) -chdir=$(GH_DIR) workspace select -or-create $(TF_WORKSPACE)
+	$(TOFU) -chdir=$(GH_DIR) destroy -var-file=$(TFVARS)
 
 # ── Format ────────────────────────────────────────────────────────────────────
 
-fmt: ## Auto-format all Terraform code in place
-	terraform -chdir=$(AWS_DIR) fmt -recursive
-	terraform -chdir=$(GH_DIR) fmt -recursive
+fmt: ## Auto-format all OpenTofu code in place
+	$(TOFU) -chdir=$(AWS_DIR) fmt -recursive
+	$(TOFU) -chdir=$(GH_DIR) fmt -recursive
 
 fmt-check: ## Check formatting without modifying files (use in CI)
-	terraform -chdir=$(AWS_DIR) fmt -recursive -check
-	terraform -chdir=$(GH_DIR) fmt -recursive -check
+	$(TOFU) -chdir=$(AWS_DIR) fmt -recursive -check
+	$(TOFU) -chdir=$(GH_DIR) fmt -recursive -check
 
 # ── Validate ──────────────────────────────────────────────────────────────────
 
-validate: aws-validate github-validate ## Validate all Terraform configurations (requires init first)
+validate: aws-validate github-validate ## Validate all OpenTofu configurations (requires init first)
 
 aws-validate: ## Validate the AWS module
-	terraform -chdir=$(AWS_DIR) validate
+	$(TOFU) -chdir=$(AWS_DIR) validate
 
 github-validate: ## Validate the GitHub module
-	terraform -chdir=$(GH_DIR) validate
+	$(TOFU) -chdir=$(GH_DIR) validate
 
 # ── Lint ──────────────────────────────────────────────────────────────────────
 

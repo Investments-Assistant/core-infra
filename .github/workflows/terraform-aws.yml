@@ -1,4 +1,4 @@
-name: Terraform — AWS
+name: OpenTofu — AWS
 
 on:
   push:
@@ -21,10 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v2
         with:
-          terraform_version: "~> 1.13"
+          tofu_version: "1.12.2"
 
       - name: Write tfvars
         run: printf '%s' "$TFVARS_CONTENT" > terraform/aws/terraform.tfvars
@@ -32,10 +32,10 @@ jobs:
           TFVARS_CONTENT: ${{ secrets.AWS_TFVARS }}
 
       - name: Init
-        run: terraform -chdir=terraform/aws init
+        run: tofu -chdir=terraform/aws init
 
       - name: Select workspace
-        run: terraform -chdir=terraform/aws workspace select -or-create prod
+        run: tofu -chdir=terraform/aws workspace select -or-create prod
 
       - name: Apply
-        run: terraform -chdir=terraform/aws apply -auto-approve -var-file=terraform.tfvars
+        run: tofu -chdir=terraform/aws apply -auto-approve -var-file=terraform.tfvars
