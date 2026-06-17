@@ -89,15 +89,11 @@ resource "github_actions_variable" "repo_variables" {
   depends_on = [github_repository.repositories]
 }
 
-resource "github_actions_variable" "github_actions_role_placeholders" {
+resource "github_actions_variable" "github_actions_role_variables" {
   for_each      = local.github_actions_role_variables_flat
   repository    = each.value.repository
   variable_name = each.value.name
-  value         = ""
+  value         = each.value.value
 
   depends_on = [github_repository.repositories]
-
-  lifecycle {
-    ignore_changes = [value]
-  }
 }

@@ -44,6 +44,11 @@ jobs:
         env:
           TFVARS_CONTENT: ${{ secrets.AWS_TFVARS }}
 
+      - name: Export AWS region
+        run: |
+          region="$(awk -F'"' '/region[[:space:]]*=/ { print $2; exit }' terraform/aws/backend.tf)"
+          echo "AWS_REGION=${region}" >> "$GITHUB_ENV"
+
       - name: Init
         run: tofu -chdir=terraform/aws init -reconfigure -upgrade
 

@@ -23,10 +23,20 @@ locals {
   app_repo = "investments-assistant"
   ci_repo  = "investments-assistant-k8s"
 
+  aws_backend_config = file("${path.module}/../aws/backend.tf")
+  aws_backend_bucket = regex("bucket\\s*=\\s*\"([^\"]+)\"", local.aws_backend_config)[0]
+  aws_backend_key    = regex("key\\s*=\\s*\"([^\"]+)\"", local.aws_backend_config)[0]
+  aws_state_key      = terraform.workspace == "default" ? local.aws_backend_key : "env:/${terraform.workspace}/${local.aws_backend_key}"
+
   github_actions_role_variable_names = toset([
     "AWS_BUILD_ROLE_ARN",
     "AWS_DEPLOY_ROLE_ARN",
   ])
+
+  github_actions_role_variable_values = {
+    AWS_BUILD_ROLE_ARN  = data.terraform_remote_state.aws.outputs.github_actions_build_role_arn
+    AWS_DEPLOY_ROLE_ARN = data.terraform_remote_state.aws.outputs.github_actions_deploy_role_arn
+  }
 
   environments = {
     dev = {
@@ -99,6 +109,7 @@ locals {
       name  = variable_name
       value = variable_value
     }
+    if !contains(local.github_actions_role_variable_names, variable_name)
   }
 
   github_actions_role_variables_flat = length(var.github_actions_role_variable_repositories) == 0 ? {} : merge([
@@ -107,8 +118,8 @@ locals {
       "${repository_name}__${variable_name}" => {
         repository = repository_name
         name       = variable_name
+        value      = local.github_actions_role_variable_values[variable_name]
       }
-      if !(repository_name == local.ci_repo && contains(keys(var.repo_variables), variable_name))
     }
   ]...)
 }

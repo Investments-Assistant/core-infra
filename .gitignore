@@ -13,6 +13,8 @@ override.tf.json
 .terraform.tfstate.lock.info
 .terraformrc
 terraform.rc
+ttplan*
+ttoutputs*
 
 # ── Python / pre-commit tooling ───────────────────────────────────────────────
 __pycache__/

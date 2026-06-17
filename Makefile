@@ -24,8 +24,9 @@ TF_ENV       ?= prod
 TOFU         ?= tofu
 AWS_DIR      := terraform/aws
 GH_DIR       := terraform/github
+AWS_REGION   ?= $(shell awk -F'"' '/region[[:space:]]*=/ { print $$2; exit }' $(AWS_DIR)/backend.tf)
 
-export AWS_PROFILE
+export AWS_PROFILE AWS_REGION
 
 .DEFAULT_GOAL := help
 
@@ -47,6 +48,7 @@ help: ## Show this help
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@printf "\nVariables (override with make <target> VAR=value):\n"
 	@printf "  \033[33m%-20s\033[0m %s\n" "AWS_PROFILE"  "$(AWS_PROFILE)"
+	@printf "  \033[33m%-20s\033[0m %s\n" "AWS_REGION"   "$(AWS_REGION)"
 	@printf "  \033[33m%-20s\033[0m %s\n" "TF_ENV"       "$(TF_ENV)"
 	@printf "  \033[33m%-20s\033[0m %s\n" "TOFU"         "$(TOFU)"
 

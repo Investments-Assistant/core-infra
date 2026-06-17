@@ -18,7 +18,7 @@ The trust policy is scoped to `Investments-Assistant/investments-assistant-k8s`
 on the configured branches, defaulting to `main`.
 
 After applying this stack, apply `terraform/github`. The GitHub stack creates
-empty repository variables named `AWS_BUILD_ROLE_ARN` and
-`AWS_DEPLOY_ROLE_ARN` for the workflow repositories. Fill those variables in
-GitHub with the matching AWS stack outputs, `github_actions_build_role_arn` and
+repository variables named `AWS_BUILD_ROLE_ARN` and `AWS_DEPLOY_ROLE_ARN` for
+the workflow repositories and populates them from the matching AWS stack
+outputs, `github_actions_build_role_arn` and
 `github_actions_deploy_role_arn`.

@@ -55,13 +55,13 @@ variable "repo_secrets" {
 }
 
 variable "repo_variables" {
-  description = "Repository-level Actions variables shared across all workflows."
+  description = "Repository-level Actions variables shared across all workflows. AWS_BUILD_ROLE_ARN and AWS_DEPLOY_ROLE_ARN are reserved and populated from the AWS stack outputs."
   type        = map(string)
   default     = {}
 }
 
 variable "github_actions_role_variable_repositories" {
-  description = "Repositories that should receive empty GitHub Actions variables for the AWS OIDC build/deploy role ARNs."
+  description = "Repositories that should receive GitHub Actions variables for the AWS OIDC build/deploy role ARNs from the AWS stack outputs."
   type        = set(string)
   default     = ["investments-assistant-k8s"]
 }

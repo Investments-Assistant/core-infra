@@ -88,10 +88,10 @@ Manages the GitHub organisation, repositories, teams, branch protections, Action
 
 Secrets are supplied via `terraform/github/$(TF_ENV).tfvars` (gitignored). See
 `terraform/github/env.tfvars.example` for the expected structure. The
-GitHub stack creates empty repository variables named `AWS_BUILD_ROLE_ARN` and
-`AWS_DEPLOY_ROLE_ARN` for the workflow repositories. Fill those variables from
-the AWS stack outputs `github_actions_build_role_arn` and
-`github_actions_deploy_role_arn` after the GitHub stack has created them.
+GitHub stack creates repository variables named `AWS_BUILD_ROLE_ARN` and
+`AWS_DEPLOY_ROLE_ARN` for the workflow repositories, populated from the AWS
+stack outputs `github_actions_build_role_arn` and
+`github_actions_deploy_role_arn`. Apply the AWS stack before the GitHub stack.
 
 ---
 
