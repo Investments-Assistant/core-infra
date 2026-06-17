@@ -79,3 +79,25 @@ resource "github_actions_secret" "repo_secrets" {
     prevent_destroy = true
   }
 }
+
+resource "github_actions_variable" "repo_variables" {
+  for_each      = local.repo_variables_flat
+  repository    = local.ci_repo
+  variable_name = each.value.name
+  value         = each.value.value
+
+  depends_on = [github_repository.repositories]
+}
+
+resource "github_actions_variable" "github_actions_role_placeholders" {
+  for_each      = local.github_actions_role_variables_flat
+  repository    = each.value.repository
+  variable_name = each.value.name
+  value         = ""
+
+  depends_on = [github_repository.repositories]
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}

@@ -4,8 +4,8 @@ IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared
 
 | Module | What it owns |
 | --- | --- |
-| `terraform/aws` | S3 bucket for remote OpenTofu state |
-| `terraform/github` | GitHub org, repositories, teams, environments, secrets |
+| `terraform/aws` | S3 bucket for remote OpenTofu state and GitHub Actions AWS OIDC IAM roles |
+| `terraform/github` | GitHub org, repositories, teams, environments, secrets, and Actions variables |
 
 ---
 
@@ -25,8 +25,8 @@ IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared
 make install
 
 # 2. Copy and fill in the var files for each module
-cp terraform/aws/terraform.tfvars.example    terraform/aws/terraform.tfvars
-cp terraform/github/terraform.tfvars.example terraform/github/terraform.tfvars
+cp terraform/aws/terraform.tfvars.example    terraform/aws/prod.tfvars
+cp terraform/github/terraform.tfvars.example terraform/github/prod.tfvars
 # Edit both files and fill in real values
 
 # 3. Initialise providers and remote state
@@ -38,8 +38,8 @@ make init
 ## Common commands
 
 ```bash
-make plan          # show all pending changes (safe, no writes)
-make apply         # apply all changes (asks for confirmation)
+make plan          # create saved plans and JSON plan logs
+make apply         # apply all changes using the saved plan
 
 make aws-plan      # plan only the AWS module
 make github-apply  # apply only the GitHub module
@@ -60,8 +60,8 @@ All key variables can be overridden on the command line:
 
 ```bash
 make plan AWS_PROFILE=my-other-profile
-make apply TF_WORKSPACE=staging
-make github-plan TFVARS=staging.tfvars
+make apply TF_ENV=staging
+make github-plan TF_ENV=staging
 ```
 
 ---
@@ -70,13 +70,28 @@ make github-plan TFVARS=staging.tfvars
 
 ### `terraform/aws`
 
-Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks. Only needs to be applied once. Requires AWS credentials with S3 permissions.
+Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks and
+creates the AWS IAM roles used by GitHub Actions OIDC:
+
+- `investments-assistant-github-actions-build-role`: can push service images to
+  the `investments-*` ECR repositories.
+- `investments-assistant-github-actions-deploy-role`: can read the
+  `investments-assistant-k8s` OpenTofu state, describe the EKS cluster, and
+  update the Route 53 alias used by the public ALB.
+
+The roles trust only the configured GitHub repository and branches through
+`token.actions.githubusercontent.com`.
 
 ### `terraform/github`
 
 Manages the GitHub organisation, repositories, teams, branch protections, Actions environments, and secrets. Requires a GitHub personal access token or GitHub App credentials configured in the environment (`GITHUB_TOKEN`).
 
-Secrets are supplied via `terraform/github/terraform.tfvars` (gitignored). See `terraform/github/terraform.tfvars.example` for the expected structure.
+Secrets are supplied via `terraform/github/$(TF_ENV).tfvars` (gitignored). See
+`terraform/github/terraform.tfvars.example` for the expected structure. The
+GitHub stack creates empty repository variables named `AWS_BUILD_ROLE_ARN` and
+`AWS_DEPLOY_ROLE_ARN` for the workflow repositories. Fill those variables from
+the AWS stack outputs `github_actions_build_role_arn` and
+`github_actions_deploy_role_arn` after the GitHub stack has created them.
 
 ---
 

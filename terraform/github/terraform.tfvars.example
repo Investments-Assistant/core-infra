@@ -16,6 +16,17 @@ repo_secrets = {
   SONAR_TOKEN = "sqp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 
+# ── GitHub Actions AWS OIDC role placeholders ────────────────────────────────
+# OpenTofu creates empty repository variables named:
+# - AWS_BUILD_ROLE_ARN
+# - AWS_DEPLOY_ROLE_ARN
+#
+# Fill them in GitHub after applying terraform/aws, using:
+# - github_actions_build_role_arn output
+# - github_actions_deploy_role_arn output
+
+github_actions_role_variable_repositories = ["investments-assistant-k8s"]
+
 # ── DEV environment ───────────────────────────────────────────────────────────
 
 dev_variables = {

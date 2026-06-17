@@ -21,6 +21,12 @@ locals {
 
 locals {
   app_repo = "investments-assistant"
+  ci_repo  = "investments-assistant-k8s"
+
+  github_actions_role_variable_names = toset([
+    "AWS_BUILD_ROLE_ARN",
+    "AWS_DEPLOY_ROLE_ARN",
+  ])
 
   environments = {
     dev = {
@@ -86,4 +92,23 @@ locals {
       value = var.repo_secrets[secret_name]
     }
   }
+
+  repo_variables_flat = {
+    for variable_name, variable_value in var.repo_variables :
+    variable_name => {
+      name  = variable_name
+      value = variable_value
+    }
+  }
+
+  github_actions_role_variables_flat = length(var.github_actions_role_variable_repositories) == 0 ? {} : merge([
+    for repository_name in var.github_actions_role_variable_repositories : {
+      for variable_name in local.github_actions_role_variable_names :
+      "${repository_name}__${variable_name}" => {
+        repository = repository_name
+        name       = variable_name
+      }
+      if !(repository_name == local.ci_repo && contains(keys(var.repo_variables), variable_name))
+    }
+  ]...)
 }

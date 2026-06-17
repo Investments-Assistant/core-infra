@@ -54,6 +54,18 @@ variable "repo_secrets" {
   default     = {}
 }
 
+variable "repo_variables" {
+  description = "Repository-level Actions variables shared across all workflows."
+  type        = map(string)
+  default     = {}
+}
+
+variable "github_actions_role_variable_repositories" {
+  description = "Repositories that should receive empty GitHub Actions variables for the AWS OIDC build/deploy role ARNs."
+  type        = set(string)
+  default     = ["investments-assistant-k8s"]
+}
+
 # ── Repository boilerplate files ──────────────────────────────────────────────
 
 variable "repo_init_files" {
