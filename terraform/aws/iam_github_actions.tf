@@ -103,7 +103,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
 }
 
 module "github_actions_build_role" {
-  source = "git::ssh://git@github.com/Investments-Assistant/terraform-modules.git//github_actions_oidc_role?ref=v1.3.0"
+  source = "git::ssh://git@github.com/Investments-Assistant/terraform-modules.git//github_actions_oidc_role?ref=v1.5.0"
 
   role_name         = "investments-assistant-github-actions-build-role"
   oidc_provider_arn = aws_iam_openid_connect_provider.github_actions.arn
@@ -117,7 +117,7 @@ module "github_actions_build_role" {
 }
 
 module "github_actions_deploy_role" {
-  source = "git::ssh://git@github.com/Investments-Assistant/terraform-modules.git//github_actions_oidc_role?ref=v1.3.0"
+  source = "git::ssh://git@github.com/Investments-Assistant/terraform-modules.git//github_actions_oidc_role?ref=v1.5.0"
 
   role_name         = "investments-assistant-github-actions-deploy-role"
   oidc_provider_arn = aws_iam_openid_connect_provider.github_actions.arn
