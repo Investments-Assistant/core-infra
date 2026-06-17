@@ -110,7 +110,7 @@ export GITHUB_TOKEN=...
 # 3. Bootstrap the AWS module (first time only — uses local state initially)
 cd terraform/aws
 terraform init
-terraform apply -var-file=terraform.tfvars
+terraform apply -var-file=prod.tfvars
 # ← Creates the S3 bucket
 
 # 4. Migrate AWS module state to S3
@@ -119,10 +119,10 @@ terraform init -migrate-state
 
 # 5. Init and apply the GitHub module
 cd ../github
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your org details and secrets
+cp env.tfvars.example prod.tfvars
+# Edit prod.tfvars with your org details and secrets
 terraform init
-terraform apply -var-file=terraform.tfvars
+terraform apply -var-file=prod.tfvars
 ```
 
 ---

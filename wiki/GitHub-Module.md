@@ -197,7 +197,8 @@ This two-environment structure is standard GitOps practice:
 
 ### Environment secrets and variables
 
-Secrets and variables are defined in `terraform.tfvars` (gitignored):
+Secrets and variables are defined in `<env>.tfvars`, for example `prod.tfvars`
+(gitignored):
 
 ```hcl
 dev_secrets = {

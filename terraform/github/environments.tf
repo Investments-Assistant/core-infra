@@ -3,7 +3,7 @@
 # Creates `dev` and `prod` environments on the investments-assistant repository,
 # each with its own protection rules, secrets, and variables.
 #
-# All locals live in locals.tf. Populate secrets in terraform.tfvars (gitignored).
+# All locals live in locals.tf. Populate secrets in <env>.tfvars (gitignored).
 # ──────────────────────────────────────────────────────────────────────────────
 
 resource "github_repository_environment" "app_envs" {

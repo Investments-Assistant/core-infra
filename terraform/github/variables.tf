@@ -20,7 +20,7 @@ variable "org_owners" {
 # ── Environment secrets & variables ───────────────────────────────────────────
 
 variable "dev_secrets" {
-  description = "Secrets injected into the dev GitHub Actions environment (sensitive — use terraform.tfvars)"
+  description = "Secrets injected into the dev GitHub Actions environment (sensitive — use <env>.tfvars)"
   type        = map(string)
   sensitive   = true
   default     = {}
@@ -33,7 +33,7 @@ variable "dev_variables" {
 }
 
 variable "prod_secrets" {
-  description = "Secrets injected into the prod GitHub Actions environment (sensitive — use terraform.tfvars)"
+  description = "Secrets injected into the prod GitHub Actions environment (sensitive — use <env>.tfvars)"
   type        = map(string)
   sensitive   = true
   default     = {}

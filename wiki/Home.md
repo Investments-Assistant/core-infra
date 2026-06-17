@@ -43,7 +43,7 @@ core-infra/
         ├── teams.tf             # core team + maintainer memberships
         ├── environments.tf      # dev + prod environments, secrets, variables
         ├── repositories.yaml    # Declarative repository catalogue
-        └── terraform.tfvars.example  # Secret values template
+        └── env.tfvars.example        # Secret values template
 ```
 
 ---

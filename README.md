@@ -25,8 +25,8 @@ IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared
 make install
 
 # 2. Copy and fill in the var files for each module
-cp terraform/aws/terraform.tfvars.example    terraform/aws/prod.tfvars
-cp terraform/github/terraform.tfvars.example terraform/github/prod.tfvars
+cp terraform/aws/env.tfvars.example    terraform/aws/prod.tfvars
+cp terraform/github/env.tfvars.example terraform/github/prod.tfvars
 # Edit both files and fill in real values
 
 # 3. Initialise providers and remote state
@@ -87,7 +87,7 @@ The roles trust only the configured GitHub repository and branches through
 Manages the GitHub organisation, repositories, teams, branch protections, Actions environments, and secrets. Requires a GitHub personal access token or GitHub App credentials configured in the environment (`GITHUB_TOKEN`).
 
 Secrets are supplied via `terraform/github/$(TF_ENV).tfvars` (gitignored). See
-`terraform/github/terraform.tfvars.example` for the expected structure. The
+`terraform/github/env.tfvars.example` for the expected structure. The
 GitHub stack creates empty repository variables named `AWS_BUILD_ROLE_ARN` and
 `AWS_DEPLOY_ROLE_ARN` for the workflow repositories. Fill those variables from
 the AWS stack outputs `github_actions_build_role_arn` and

@@ -42,7 +42,7 @@ change the Terraform resources created. All repos get the same settings regardle
 cd terraform/github
 export GITHUB_TOKEN=your_github_pat
 
-terraform plan -var-file=terraform.tfvars
+terraform plan -var-file=prod.tfvars
 ```
 
 You should see a plan that creates:
@@ -71,7 +71,7 @@ Example plan output:
 ## Step 3: Apply
 
 ```bash
-terraform apply -var-file=terraform.tfvars
+terraform apply -var-file=prod.tfvars
 ```
 
 Terraform creates the GitHub repository and pushes all five standard files.

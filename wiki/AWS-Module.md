@@ -60,7 +60,7 @@ resource "aws_s3_bucket" "prod_tf_state_bucket" {
 }
 ```
 
-The bucket name is passed in via `var.prod_tf_state_bucket_name` (from `terraform.tfvars`).
+The bucket name is passed in via `var.prod_tf_state_bucket_name` (from `<env>.tfvars`).
 The actual name is `invass-core-infra-terraform-state-20251026205837245600000001` — this
 was generated with a random suffix to ensure global uniqueness (S3 bucket names are
 globally unique across all AWS accounts).
@@ -177,7 +177,7 @@ the S3-level KMS encryption.
 |---|---|---|
 | `prod_tf_state_bucket_name` | string | The globally unique S3 bucket name |
 
-Set in `terraform.tfvars`:
+Set in `<env>.tfvars`, for example `prod.tfvars`:
 ```hcl
 prod_tf_state_bucket_name = "invass-core-infra-terraform-state-20251026205837245600000001"
 ```

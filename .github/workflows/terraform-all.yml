@@ -6,15 +6,25 @@ on:
     paths:
       - terraform/**
   workflow_dispatch:
+    inputs:
+      tf_env:
+        description: "OpenTofu workspace and tfvars prefix"
+        required: false
+        default: prod
+        type: string
 
 jobs:
   aws:
     name: AWS
     uses: ./.github/workflows/terraform-aws.yml
+    with:
+      tf_env: ${{ inputs.tf_env || 'prod' }}
     secrets: inherit
 
   github:
     name: GitHub
     uses: ./.github/workflows/terraform-github.yml
+    with:
+      tf_env: ${{ inputs.tf_env || 'prod' }}
     secrets: inherit
     needs: aws
