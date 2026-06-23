@@ -17,34 +17,6 @@ variable "org_owners" {
   type = set(string)
 }
 
-# ── Environment secrets & variables ───────────────────────────────────────────
-
-variable "dev_secrets" {
-  description = "Secrets injected into the dev GitHub Actions environment (sensitive — use <env>.tfvars)"
-  type        = map(string)
-  sensitive   = true
-  default     = {}
-}
-
-variable "dev_variables" {
-  description = "Non-sensitive variables injected into the dev GitHub Actions environment"
-  type        = map(string)
-  default     = {}
-}
-
-variable "prod_secrets" {
-  description = "Secrets injected into the prod GitHub Actions environment (sensitive — use <env>.tfvars)"
-  type        = map(string)
-  sensitive   = true
-  default     = {}
-}
-
-variable "prod_variables" {
-  description = "Non-sensitive variables injected into the prod GitHub Actions environment"
-  type        = map(string)
-  default     = {}
-}
-
 # ── Repository-level secrets (available to all workflows, not env-scoped) ─────
 
 variable "repo_secrets" {
@@ -55,15 +27,9 @@ variable "repo_secrets" {
 }
 
 variable "repo_variables" {
-  description = "Repository-level Actions variables shared across all workflows. AWS_BUILD_ROLE_ARN and AWS_DEPLOY_ROLE_ARN are reserved and populated from the AWS stack outputs."
+  description = "Repository-level Actions variables shared across investments-assistant workflows."
   type        = map(string)
   default     = {}
-}
-
-variable "github_actions_role_variable_repositories" {
-  description = "Repositories that should receive GitHub Actions variables for the AWS OIDC build/deploy role ARNs from the AWS stack outputs."
-  type        = set(string)
-  default     = ["investments-assistant-k8s"]
 }
 
 # ── Repository boilerplate files ──────────────────────────────────────────────

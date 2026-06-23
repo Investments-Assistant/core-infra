@@ -3,21 +3,7 @@ core-infra:
   gitignore_template: "Terraform"
   terraform_state: true
 
-terraform-modules:
-  description: "Reusable OpenTofu modules for Investments Assistant project"
-  gitignore_template: "Terraform"
-  terraform_state: false
-
-helm-charts:
-  description: "Reusable Helm charts for Investments Assistant project"
-  terraform_state: false
-
 investments-assistant:
   description: "Main application codebase for Investments Assistant project"
   gitignore_template: "Python"
   terraform_state: false
-
-investments-assistant-k8s:
-  description: "Kubernetes manifests and Helm charts for Investments Assistant project"
-  gitignore_template: "Python"
-  terraform_state: true

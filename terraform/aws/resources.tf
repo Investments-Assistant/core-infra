@@ -22,9 +22,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   for_each = aws_s3_bucket.tf_states_buckets
   bucket   = each.value.id
   rule {
-    bucket_key_enabled = true
     apply_server_side_encryption_by_default {
-      sse_algorithm = "aws:kms"
+      sse_algorithm = "AES256"
     }
   }
 }
@@ -44,9 +43,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "aws_s3_terraform_state_bucket_
   rule {
     id     = "expire-old-versions"
     status = "Enabled"
-    noncurrent_version_transition {
-      noncurrent_days = 30
-      storage_class   = "INTELLIGENT_TIERING"
+    noncurrent_version_expiration {
+      noncurrent_days = 90
     }
   }
 }

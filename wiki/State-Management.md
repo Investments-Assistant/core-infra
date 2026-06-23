@@ -3,6 +3,11 @@
 Both Terraform modules (`aws/` and `github/`) store their state in the same S3 bucket
 with different **state keys** (paths within the bucket).
 
+Terraform state is tiny, so this S3 usage should stay effectively free or
+near-zero cost when you remain inside the current AWS Free Tier/credit limits.
+Keep the bucket private, do not use it for backups or app data, and keep old
+state versions bounded so storage cannot grow unnoticed.
+
 ---
 
 ## State file locations
@@ -73,8 +78,9 @@ terraform show -json
 
 ## State backup and restore
 
-Because versioning is enabled on the S3 bucket, every version of every state file is
-retained. To restore a previous state:
+Because versioning is enabled on the S3 bucket, previous versions of state files are
+kept for rollback. The bucket lifecycle expires noncurrent versions after 90 days
+to avoid unbounded storage growth. To restore a previous state:
 
 ```bash
 # List all versions of the github state file
@@ -131,9 +137,9 @@ terraform apply -var-file=prod.tfvars
 
 Terraform state contains the plaintext values of all `sensitive` variables (secrets).
 The state is protected by:
-1. **S3 private access**: no public access block; the bucket is not publicly readable
-2. **KMS encryption at rest**: S3-level AES-256 via AWS KMS
-3. **Terraform client-side encryption**: `encrypt = true` in the backend config
+1. **S3 private access**: public access block is enabled; the bucket is not publicly readable
+2. **S3 encryption at rest**: SSE-S3 / AES-256 bucket default encryption
+3. **Backend encryption flag**: `encrypt = true` in the backend config requests encrypted state objects
 
 Anyone with access to the S3 bucket can read the state file and extract secrets. Control
 access via IAM policies: only the developer's IAM user and any CI/CD roles should have

@@ -4,8 +4,8 @@ IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared
 
 | Module | What it owns |
 | --- | --- |
-| `terraform/aws` | S3 bucket for remote OpenTofu state and GitHub Actions AWS OIDC IAM roles |
-| `terraform/github` | GitHub org, repositories, teams, environments, secrets, and Actions variables |
+| `terraform/aws` | S3 bucket for remote OpenTofu state |
+| `terraform/github` | GitHub org, repositories, teams, environments, secrets, and Actions variables for the Pi deployment workflow |
 
 ---
 
@@ -70,17 +70,9 @@ make github-plan TF_ENV=staging
 
 ### `terraform/aws`
 
-Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks and
-creates the AWS IAM roles used by GitHub Actions OIDC:
-
-- `investments-assistant-github-actions-build-role`: can push service images to
-  the `investments-*` ECR repositories.
-- `investments-assistant-github-actions-deploy-role`: can read the
-  `investments-assistant-k8s` OpenTofu state, describe the EKS cluster, and
-  update the Route 53 alias used by the public ALB.
-
-The roles trust only the configured GitHub repository and branches through
-`token.actions.githubusercontent.com`.
+Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks. The
+state bucket is private, versioned, encrypted with SSE-S3, uses S3 lock files,
+and is the only AWS resource required by the Raspberry Pi strategy.
 
 ### `terraform/github`
 
@@ -88,16 +80,15 @@ Manages the GitHub organisation, repositories, teams, branch protections, Action
 
 Secrets are supplied via `terraform/github/$(TF_ENV).tfvars` (gitignored). See
 `terraform/github/env.tfvars.example` for the expected structure. The
-GitHub stack creates repository variables named `AWS_BUILD_ROLE_ARN` and
-`AWS_DEPLOY_ROLE_ARN` for the workflow repositories, populated from the AWS
-stack outputs `github_actions_build_role_arn` and
-`github_actions_deploy_role_arn`. Apply the AWS stack before the GitHub stack.
+GitHub stack can manage repository variables such as `PI_DEPLOY_DIR` for the
+Pi self-hosted runner. Runtime secrets such as broker API keys remain in the
+Pi's `.env` file by default; they do not need to be stored in GitHub Actions.
 
 ---
 
 ## State backend
 
-Both stacks store state in the S3 bucket created by the AWS stack, with server-side encryption (KMS), versioning, and S3 lock files enabled. The state files are:
+Both stacks store state in the S3 bucket created by the AWS stack, with server-side encryption, versioning, and S3 lock files enabled. The state files are:
 
 | Module | S3 key |
 | --- | --- |

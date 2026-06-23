@@ -1,9 +1,8 @@
 # ── GitHub Environments ────────────────────────────────────────────────────────
 #
-# Creates `dev` and `prod` environments on the investments-assistant repository,
-# each with its own protection rules, secrets, and variables.
-#
-# All locals live in locals.tf. Populate secrets in <env>.tfvars (gitignored).
+# Creates `dev` and `prod` environments on the investments-assistant repository.
+# Runtime secrets stay in the Raspberry Pi `.env`; GitHub environments are used
+# only for deployment governance.
 # ──────────────────────────────────────────────────────────────────────────────
 
 resource "github_repository_environment" "app_envs" {
@@ -39,33 +38,6 @@ resource "github_repository_environment_deployment_policy" "dev_any_branch" {
   depends_on = [github_repository_environment.app_envs]
 }
 
-# ── Environment secrets ────────────────────────────────────────────────────────
-
-resource "github_actions_environment_secret" "app_secrets" {
-  for_each    = local.env_secrets_flat
-  repository  = local.app_repo
-  environment = each.value.environment
-  secret_name = each.value.name
-  value       = each.value.value
-
-  depends_on = [github_repository_environment.app_envs]
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-# ── Environment variables ──────────────────────────────────────────────────────
-
-resource "github_actions_environment_variable" "app_variables" {
-  for_each      = local.env_variables_flat
-  repository    = local.app_repo
-  environment   = each.value.environment
-  variable_name = each.value.name
-  value         = each.value.value
-
-  depends_on = [github_repository_environment.app_envs]
-}
-
 # ── Repository-level secrets (shared across all workflows/environments) ────────
 
 resource "github_actions_secret" "repo_secrets" {
@@ -82,16 +54,7 @@ resource "github_actions_secret" "repo_secrets" {
 
 resource "github_actions_variable" "repo_variables" {
   for_each      = local.repo_variables_flat
-  repository    = local.ci_repo
-  variable_name = each.value.name
-  value         = each.value.value
-
-  depends_on = [github_repository.repositories]
-}
-
-resource "github_actions_variable" "github_actions_role_variables" {
-  for_each      = local.github_actions_role_variables_flat
-  repository    = each.value.repository
+  repository    = local.app_repo
   variable_name = each.value.name
   value         = each.value.value
 

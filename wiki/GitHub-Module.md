@@ -3,7 +3,7 @@
 Located at `terraform/github/`.
 
 Manages the entire **Investments-Assistant** GitHub organisation: settings, repositories,
-files, teams, and CI/CD environments.
+files, teams, CI/CD environments, and repository-level Actions variables/secrets.
 
 ---
 
@@ -195,30 +195,9 @@ This two-environment structure is standard GitOps practice:
 - Developers can freely deploy to `dev` from feature branches for testing
 - Prod deployments require a human approval step, protecting against accidental auto-merges
 
-### Environment secrets and variables
-
-Secrets and variables are defined in `<env>.tfvars`, for example `prod.tfvars`
-(gitignored):
-
-```hcl
-dev_secrets = {
-  ALPACA_API_KEY    = "PKtest..."
-  POSTGRES_PASSWORD = "devpassword"
-}
-
-dev_variables = {
-  LLM_MODEL_PATH = "/app/models/qwen2.5-3b-instruct-q8_0.gguf"  # smaller model for dev
-}
-
-prod_secrets = {
-  ALPACA_API_KEY    = "PKlive..."
-  POSTGRES_PASSWORD = "strongpassword"
-}
-```
-
-`locals.tf` flattens these nested maps into a single-level map with composite keys
-(`"dev__ALPACA_API_KEY"`) for use with `for_each`. This is a common Terraform pattern
-for iterating over nested structures.
+Runtime secrets are not stored in GitHub environments. Broker keys, database passwords,
+newsletter credentials, and model paths live in the Pi deployment directory's `.env`.
+The GitHub environments are used for deployment governance only.
 
 ### Repository-level secrets
 
@@ -247,43 +226,15 @@ and prod workflows.
 | `github_organization_name` | string | Display name |
 | `github_organization_description` | string | Org description |
 | `org_owners` | `set(string)` | GitHub usernames with admin rights |
-| `dev_secrets` | `map(string)` | Sensitive env secrets for `dev` |
-| `dev_variables` | `map(string)` | Non-sensitive env vars for `dev` |
-| `prod_secrets` | `map(string)` | Sensitive env secrets for `prod` |
-| `prod_variables` | `map(string)` | Non-sensitive env vars for `prod` |
 | `repo_secrets` | `map(string)` | Repo-level secrets (all workflows) |
+| `repo_variables` | `map(string)` | Repo-level variables, e.g. `PI_DEPLOY_DIR` |
 
-All `*_secrets` variables are marked `sensitive = true`. Terraform will not print their
-values in `plan` or `apply` output, and will redact them in state file display.
+`repo_secrets` is marked `sensitive = true`. Terraform will not print values in
+`plan` or `apply` output, but the plaintext still exists in state.
 
 ---
 
-## Pre-built non-sensitive variables
+## Repository variables
 
-`locals.tf` pre-populates both `dev` and `prod` environments with configuration that
-doesn't need to be kept secret:
-
-```hcl
-dev = {
-  variables = merge({
-    ENVIRONMENT            = "development"
-    TRADING_MODE           = "recommend"
-    LLM_BACKEND            = "llama_cpp"
-    NEWSLETTER_IMAP_SERVER = "imap.gmail.com"
-    NEWSLETTER_IMAP_PORT   = "993"
-    ...
-  }, var.dev_variables)
-}
-
-prod = {
-  variables = merge({
-    ENVIRONMENT  = "production"
-    TRADING_MODE = "auto"     # prod runs in auto mode
-    ...
-  }, var.prod_variables)
-}
-```
-
-Note `TRADING_MODE = "auto"` in prod — the production environment defaults to autonomous
-trading mode. This is a deliberate choice for a "set and forget" home assistant; change
-to `"recommend"` in `locals.tf` if you prefer manual confirmation in production.
+The Pi deployment workflow reads `PI_DEPLOY_DIR` from repository variables. If unset,
+the workflow defaults to `$HOME/investments-assistant` on the self-hosted runner.
