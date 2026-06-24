@@ -1,7 +1,7 @@
 # core-infra Wiki
 
 Infrastructure as Code for the **Investments Assistant** GitHub organisation.
-All GitHub and AWS infrastructure is managed declaratively via Terraform.
+All GitHub and AWS infrastructure is managed declaratively via OpenTofu.
 
 ---
 
@@ -21,11 +21,9 @@ All GitHub and AWS infrastructure is managed declaratively via Terraform.
 ```
 core-infra/
 ├── pyproject.toml               # pre-commit + dev tooling config
-├── .pre-commit-config.yaml      # Terraform format/validate hooks
+├── .pre-commit-config.yaml      # OpenTofu format/validate hooks
 │
-└── terraform/
-    ├── build-prod.sh            # wrapper: init + plan + apply for all modules
-    │
+└── opentofu/
     ├── aws/                     # Module: AWS S3 remote state bucket
     │   ├── providers.tf         # AWS provider (eu-south-2)
     │   ├── backend.tf           # S3 remote state backend config
@@ -48,13 +46,13 @@ core-infra/
 
 ---
 
-## Why Terraform for GitHub?
+## Why OpenTofu for GitHub?
 
 - **Auditability**: every change to repository settings, team memberships, and secrets
-  goes through a PR with a `terraform plan` diff — no ad-hoc clicks in the GitHub UI
+  goes through a PR with a `tofu plan` diff — no ad-hoc clicks in the GitHub UI
 - **Consistency**: all repos get the same `CODEOWNERS`, `CODE_OF_CONDUCT`, `CONTRIBUTING`,
   and `LICENSE` files from shared templates, automatically
 - **Safety**: `prevent_destroy = true` on repositories, teams, and org settings ensures
   a typo in a YAML file can't accidentally delete a repository
-- **Secrets management**: GitHub Actions secrets for API keys are stored in Terraform
+- **Secrets management**: GitHub Actions secrets for API keys are stored in OpenTofu
   state (encrypted in S3) and injected into environments without exposing them in source code

@@ -22,8 +22,8 @@
 AWS_PROFILE  ?= investments-assistant-admin
 TF_ENV       ?= prod
 TOFU         ?= tofu
-AWS_DIR      := terraform/aws
-GH_DIR       := terraform/github
+AWS_DIR      := opentofu/aws
+GH_DIR       := opentofu/github
 AWS_REGION   ?= $(shell awk -F'"' '/region[[:space:]]*=/ { print $$2; exit }' $(AWS_DIR)/backend.tf)
 
 export AWS_PROFILE AWS_REGION
@@ -70,6 +70,16 @@ github-init: ## Initialise the GitHub stack
 	$(TOFU) -chdir=$(GH_DIR) init -reconfigure -upgrade
 	$(TOFU) -chdir=$(GH_DIR) workspace select -or-create $(TF_ENV)
 
+# ── Validate ──────────────────────────────────────────────────────────────────
+
+validate: aws-validate github-validate ## Validate all OpenTofu configurations
+
+aws-validate: aws-init ## Validate the AWS module
+	$(TOFU) -chdir=$(AWS_DIR) validate -var-file=$(TF_ENV).tfvars
+
+github-validate: github-init ## Validate the GitHub module
+	$(TOFU) -chdir=$(GH_DIR) validate -var-file=$(TF_ENV).tfvars
+
 # ── Plan ─────────────────────────────────────────────────────────────────────
 
 plan: aws-plan github-plan ## Create saved plans for all modules
@@ -109,16 +119,6 @@ fmt: ## Auto-format all OpenTofu code in place
 fmt-check: ## Check formatting without modifying files (use in CI)
 	$(TOFU) -chdir=$(AWS_DIR) fmt -recursive -check
 	$(TOFU) -chdir=$(GH_DIR) fmt -recursive -check
-
-# ── Validate ──────────────────────────────────────────────────────────────────
-
-validate: aws-validate github-validate ## Validate all OpenTofu configurations
-
-aws-validate: aws-init ## Validate the AWS module
-	$(TOFU) -chdir=$(AWS_DIR) validate -var-file=$(TF_ENV).tfvars
-
-github-validate: github-init ## Validate the GitHub module
-	$(TOFU) -chdir=$(GH_DIR) validate -var-file=$(TF_ENV).tfvars
 
 # ── Lint ──────────────────────────────────────────────────────────────────────
 

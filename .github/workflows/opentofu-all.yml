@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - terraform/**
+      - opentofu/**
   workflow_dispatch:
     inputs:
       tf_env:
@@ -16,14 +16,14 @@ on:
 jobs:
   aws:
     name: AWS
-    uses: ./.github/workflows/terraform-aws.yml
+    uses: ./.github/workflows/opentofu-aws.yml
     with:
       tf_env: ${{ inputs.tf_env || 'prod' }}
     secrets: inherit
 
   github:
     name: GitHub
-    uses: ./.github/workflows/terraform-github.yml
+    uses: ./.github/workflows/opentofu-github.yml
     with:
       tf_env: ${{ inputs.tf_env || 'prod' }}
     secrets: inherit

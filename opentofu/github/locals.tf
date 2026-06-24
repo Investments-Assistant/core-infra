@@ -5,7 +5,7 @@ locals {
       name               = name
       description        = try(repo.description, null)
       gitignore_template = try(repo.gitignore_template, null)
-      terraform_state    = try(repo.terraform_state, false)
+      opentofu_state     = try(repo.opentofu_state, false)
       init_files = {
         code_of_conduct = try(var.repo_init_files[name].code_of_conduct == true, false)
         codeowners      = try(var.repo_init_files[name].codeowners == true, false)

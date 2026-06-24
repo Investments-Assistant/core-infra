@@ -7,42 +7,41 @@ two-step process: add it to the YAML catalogue, then apply.
 
 ## Step 1: Add to `repositories.yaml`
 
-Edit `terraform/github/repositories.yaml`:
+Edit `opentofu/github/repositories.yaml`:
 
 ```yaml
 core-infra:
   description: "Infrastructure as Code for Investments Assistant project"
-  gitignore_template: "Terraform"
-  terraform_state: true
+  opentofu_state: true
 
 investments-assistant:
   description: "Main application codebase"
   gitignore_template: "Python"
-  terraform_state: false
+  opentofu_state: false
 
 # Add your new repo here:
 my-new-service:
   description: "A new microservice for the Investments Assistant project"
-  gitignore_template: "Python"   # or "Go", "Node", "Terraform", etc.
-  terraform_state: false          # set to true if this repo also stores TF state
+  gitignore_template: "Python"   # or another template name GitHub supports
+  opentofu_state: false          # set to true if this repo also stores TF state
 ```
 
 **Available `gitignore_template` values**: any template name from GitHub's
-`.gitignore` template list — `Python`, `Go`, `Node`, `Terraform`, `Java`, `Rust`, etc.
+`.gitignore` template list — `Python`, `Go`, `Node`, `Java`, `Rust`, etc.
 If `null`, no `.gitignore` is created (you'd add one manually).
 
-**`terraform_state`**: a custom attribute used for your own tracking — it doesn't
-change the Terraform resources created. All repos get the same settings regardless.
+**`opentofu_state`**: a custom attribute used for your own tracking — it doesn't
+change the OpenTofu resources created. All repos get the same settings regardless.
 
 ---
 
 ## Step 2: Preview the changes
 
 ```bash
-cd terraform/github
+cd opentofu/github
 export GITHUB_TOKEN=your_github_pat
 
-terraform plan -var-file=prod.tfvars
+tofu plan -var-file=prod.tfvars
 ```
 
 You should see a plan that creates:
@@ -71,10 +70,10 @@ Example plan output:
 ## Step 3: Apply
 
 ```bash
-terraform apply -var-file=prod.tfvars
+tofu apply -var-file=prod.tfvars
 ```
 
-Terraform creates the GitHub repository and pushes all five standard files.
+OpenTofu creates the GitHub repository and pushes all five standard files.
 
 ---
 
@@ -88,17 +87,17 @@ Terraform creates the GitHub repository and pushes all five standard files.
 | `LICENSE` | MIT License |
 | `README.md` | `# repo-name\n\n{description}` placeholder |
 
-These are managed by Terraform. If you edit them manually on GitHub, the next
-`terraform apply` will overwrite your changes (because `overwrite_on_create = true`).
+These are managed by OpenTofu. If you edit them manually on GitHub, the next
+`tofu apply` will overwrite your changes (because `overwrite_on_create = true`).
 To customise: either update the template in `files_templates/` (affects all repos) or
-stop managing the file with Terraform (remove the `github_repository_file` resource for
+stop managing the file with OpenTofu (remove the `github_repository_file` resource for
 that specific file/repo).
 
 ---
 
 ## Granting repo access to the `core` team
 
-Repository access is not currently managed by Terraform — the `core` team has access
+Repository access is not currently managed by OpenTofu — the `core` team has access
 via org membership. If you need to grant access to a specific team, add:
 
 ```hcl
@@ -114,8 +113,8 @@ resource "github_team_repository" "core_my_new_service" {
 
 ## Branch protection
 
-Branch protection rules are not yet managed by Terraform. To add them manually (or via
-Terraform with `github_branch_protection`):
+Branch protection rules are not yet managed by OpenTofu. To add them manually (or via
+OpenTofu with `github_branch_protection`):
 
 ```hcl
 resource "github_branch_protection" "main" {
@@ -140,8 +139,8 @@ resource "github_branch_protection" "main" {
 
 ## Removing a repository
 
-**Do not remove a repository from `repositories.yaml` and run `terraform apply`.**
-Because `prevent_destroy = true` is set on `github_repository`, Terraform will refuse
+**Do not remove a repository from `repositories.yaml` and run `tofu apply`.**
+Because `prevent_destroy = true` is set on `github_repository`, OpenTofu will refuse
 to delete the resource:
 
 ```
@@ -153,7 +152,7 @@ Error: Instance cannot be destroyed
 To intentionally delete a repository:
 1. Remove `prevent_destroy = true` from the resource temporarily
 2. Remove the entry from `repositories.yaml`
-3. Run `terraform apply`
+3. Run `tofu apply`
 4. Re-add `prevent_destroy = true`
 
 Alternatively, archive the repository on GitHub (sets it read-only) rather than deleting it.

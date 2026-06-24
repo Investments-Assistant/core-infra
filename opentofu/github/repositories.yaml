@@ -1,0 +1,22 @@
+core-infra:
+  description: "Infrastructure as Code for Investments Assistant project"
+  opentofu_state: true
+
+investments-assistant-raspberry-pi-5:
+  description: "Investments Assistant project for Raspberry Pi 5"
+  gitignore_template: "Python"
+  opentofu_state: false
+
+investments-assistant-k8s:
+  description: "Investments Assistant project for Kubernetes cluster in AWS EKS"
+  # gitignore_template: "Kubernetes"
+  opentofu_state: false
+
+helm-charts:
+  description: "Helm charts for Investments Assistant project in Kubernetes"
+  # gitignore_template: "Helm"
+  opentofu_state: false
+
+opentofu-modules:
+  description: "OpenTofu modules for Investments Assistant project"
+  opentofu_state: false

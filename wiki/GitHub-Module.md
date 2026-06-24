@@ -1,6 +1,6 @@
 # GitHub Module
 
-Located at `terraform/github/`.
+Located at `opentofu/github/`.
 
 Manages the entire **Investments-Assistant** GitHub organisation: settings, repositories,
 files, teams, CI/CD environments, and repository-level Actions variables/secrets.
@@ -18,7 +18,7 @@ provider "github" {
 
 The GitHub provider authenticates via the `GITHUB_TOKEN` environment variable. Set it to
 a fine-grained personal access token (or a GitHub App token) with admin:org and repo
-permissions before running Terraform.
+permissions before running OpenTofu.
 
 **Version**: `integrations/github ~> 6.0` — pins to the 6.x major version to avoid
 breaking changes from provider upgrades.
@@ -37,7 +37,7 @@ resource "github_organization_settings" "github_organization_settings" {
 }
 ```
 
-`prevent_destroy = true` means `terraform destroy` will fail with an error rather than
+`prevent_destroy = true` means `tofu destroy` will fail with an error rather than
 deleting the org settings resource. This is a safety guard — accidentally running destroy
 cannot nuke the organisation configuration.
 
@@ -61,18 +61,17 @@ one owner, this is fine. For a larger team, you'd separate owners from members.
 ```yaml
 core-infra:
   description: "Infrastructure as Code for Investments Assistant project"
-  gitignore_template: "Terraform"
-  terraform_state: true
+  opentofu_state: true
 
 investments-assistant:
   description: "Main application codebase for Investments Assistant project"
   gitignore_template: "Python"
-  terraform_state: false
+  opentofu_state: false
 ```
 
 **Why YAML?** Storing repository definitions in YAML instead of directly in HCL makes
-it easy to add a new repository without editing Terraform code — just add a new entry to
-`repositories.yaml` and run `terraform apply`.
+it easy to add a new repository without editing OpenTofu code — just add a new entry to
+`repositories.yaml` and run `tofu apply`.
 
 `locals.tf` decodes this YAML:
 ```hcl
@@ -83,7 +82,7 @@ locals {
       name               = name
       description        = try(repo.description, null)
       gitignore_template = try(repo.gitignore_template, null)
-      terraform_state    = try(repo.terraform_state, false)
+      opentofu_state     = try(repo.opentofu_state, false)
     }
   }
 }
@@ -124,7 +123,7 @@ exposure before it reaches the remote.
 
 ### Standard files
 
-Five files are managed by Terraform and pushed to every repository from shared templates:
+Five files are managed by OpenTofu and pushed to every repository from shared templates:
 
 | File | Template | Content |
 |---|---|---|
@@ -141,10 +140,10 @@ content = templatefile("${path.module}/files_templates/CODEOWNERS_template", {
 })
 ```
 
-`overwrite_on_create = true` means re-running `terraform apply` will update these files
+`overwrite_on_create = true` means re-running `tofu apply` will update these files
 in the repository if the template changes.
 
-**Why manage these files via Terraform?** Ensures every repository has the same
+**Why manage these files via OpenTofu?** Ensures every repository has the same
 baseline governance files without manually creating them. If you add a new repository to
 `repositories.yaml`, it gets all five files automatically on the next apply.
 
@@ -229,7 +228,7 @@ and prod workflows.
 | `repo_secrets` | `map(string)` | Repo-level secrets (all workflows) |
 | `repo_variables` | `map(string)` | Repo-level variables, e.g. `PI_DEPLOY_DIR` |
 
-`repo_secrets` is marked `sensitive = true`. Terraform will not print values in
+`repo_secrets` is marked `sensitive = true`. OpenTofu will not print values in
 `plan` or `apply` output, but the plaintext still exists in state.
 
 ---
