@@ -10,7 +10,7 @@ files, teams, CI/CD environments, and repository-level Actions variables/secrets
 ## Provider
 
 ```hcl
-# providers.tf
+# providers.tofu
 provider "github" {
   owner = "Investments-Assistant"
 }
@@ -25,7 +25,7 @@ breaking changes from provider upgrades.
 
 ---
 
-## Organisation settings (`organization.tf`)
+## Organisation settings (`organization.tofu`)
 
 ```hcl
 resource "github_organization_settings" "github_organization_settings" {
@@ -73,7 +73,7 @@ investments-assistant:
 it easy to add a new repository without editing OpenTofu code — just add a new entry to
 `repositories.yaml` and run `tofu apply`.
 
-`locals.tf` decodes this YAML:
+`locals.tofu` decodes this YAML:
 ```hcl
 locals {
   repositories = {
@@ -92,7 +92,7 @@ locals {
 
 ---
 
-## Repository settings (`repositories.tf`)
+## Repository settings (`repositories.tofu`)
 
 All repositories are created with the same security settings:
 
@@ -149,7 +149,7 @@ baseline governance files without manually creating them. If you add a new repos
 
 ---
 
-## Teams (`teams.tf`)
+## Teams (`teams.tofu`)
 
 ```hcl
 resource "github_team" "core" {
@@ -171,14 +171,14 @@ The `core` team has `privacy = "closed"` — visible to org members but not to t
 All members of `org_owners` are added as team `maintainer` (not just `member`), giving
 them admin rights over the team.
 
-The `core` team is referenced in `environments.tf` as a required reviewer for `prod`
+The `core` team is referenced in `environments.tofu` as a required reviewer for `prod`
 deployments.
 
 ---
 
-## Environments (`environments.tf`)
+## Environments (`environments.tofu`)
 
-Two environments are created on the `investments-assistant` repository:
+Two environments are created on the `investments-assistant-raspberry-pi-5` repository:
 
 ### `dev` — permissive
 - No required reviewers
@@ -217,7 +217,7 @@ and prod workflows.
 
 ---
 
-## Variables (`variables.tf`)
+## Variables (`variables.tofu`)
 
 | Variable | Type | Description |
 |---|---|---|
@@ -226,7 +226,7 @@ and prod workflows.
 | `github_organization_description` | string | Org description |
 | `org_owners` | `set(string)` | GitHub usernames with admin rights |
 | `repo_secrets` | `map(string)` | Repo-level secrets (all workflows) |
-| `repo_variables` | `map(string)` | Repo-level variables, e.g. `PI_DEPLOY_DIR` |
+| `repo_variables` | `map(string)` | Repo-level variables for Pi deployment, e.g. `PI_DEPLOY_DIR` |
 
 `repo_secrets` is marked `sensitive = true`. OpenTofu will not print values in
 `plan` or `apply` output, but the plaintext still exists in state.

@@ -1,6 +1,6 @@
 # ── GitHub Environments ────────────────────────────────────────────────────────
 #
-# Creates `dev` and `prod` environments on the investments-assistant repository.
+# Creates `dev` and `prod` environments on the Raspberry Pi application repository.
 # Runtime secrets stay in the Raspberry Pi `.env`; GitHub environments are used
 # only for deployment governance.
 # ──────────────────────────────────────────────────────────────────────────────

@@ -101,7 +101,7 @@ Repository access is not currently managed by OpenTofu — the `core` team has a
 via org membership. If you need to grant access to a specific team, add:
 
 ```hcl
-# In teams.tf or a new file
+# In teams.tofu or a new file
 resource "github_team_repository" "core_my_new_service" {
   team_id    = github_team.core.id
   repository = "my-new-service"

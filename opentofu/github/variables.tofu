@@ -27,7 +27,7 @@ variable "repo_secrets" {
 }
 
 variable "repo_variables" {
-  description = "Repository-level Actions variables shared across investments-assistant workflows."
+  description = "Repository-level Actions variables shared across Pi deployment workflows."
   type        = map(string)
   default     = {}
 }

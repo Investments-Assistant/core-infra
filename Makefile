@@ -1,136 +1,48 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Core Infrastructure — Makefile
 #
-# Wraps the two OpenTofu stacks (aws, github) with a consistent interface.
-#
-# Prerequisites: tofu, tflint, pre-commit, poetry
-#
-# Quick start:
-#   make install         # install local dev tooling (pre-commit)
-#   make init            # tofu init on both stacks
-#   make plan            # show pending changes (no writes)
-#   make apply           # apply saved plans with auto-approve
-#   make help            # full target list
-#
-# Variables (override on the command line):
-#   AWS_PROFILE   – AWS credential profile used for S3 state backend
-#                   default: investments-assistant-admin
-#   TF_ENV        – OpenTofu workspace and tfvars prefix
-#                   default: prod
+# The root file owns shared configuration and repository-wide aliases. Stack
+# lifecycles and developer tooling live in makefiles/ so each concern can grow
+# independently without turning this file into a second orchestration script.
 # ─────────────────────────────────────────────────────────────────────────────
 
-AWS_PROFILE  ?= investments-assistant-admin
-TF_ENV       ?= prod
+ROOT_DIR     := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+TT_ENV       ?= prod
 TOFU         ?= tofu
-AWS_DIR      := opentofu/aws
-GH_DIR       := opentofu/github
-AWS_REGION   ?= $(shell awk -F'"' '/region[[:space:]]*=/ { print $$2; exit }' $(AWS_DIR)/backend.tf)
-
-export AWS_PROFILE AWS_REGION
-
+GH_DIR       := $(ROOT_DIR)opentofu/github
 .DEFAULT_GOAL := help
 
-.PHONY: help install \
-        init aws-init github-init \
-        plan aws-plan github-plan \
-        apply aws-apply github-apply \
-        destroy aws-destroy github-destroy \
-        fmt fmt-check \
-        validate aws-validate github-validate \
-        lint aws-lint github-lint \
-        pre-commit
+include $(ROOT_DIR)makefiles/github.mk
+include $(ROOT_DIR)makefiles/tooling.mk
+
+.PHONY: help \
+        init plan apply destroy \
+        fmt fmt-check validate lint
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 
 help: ## Show this help
 	@printf "Usage: make <target>\n\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@printf "\nVariables (override with make <target> VAR=value):\n"
-	@printf "  \033[33m%-20s\033[0m %s\n" "AWS_PROFILE"  "$(AWS_PROFILE)"
-	@printf "  \033[33m%-20s\033[0m %s\n" "AWS_REGION"   "$(AWS_REGION)"
-	@printf "  \033[33m%-20s\033[0m %s\n" "TF_ENV"       "$(TF_ENV)"
-	@printf "  \033[33m%-20s\033[0m %s\n" "TOFU"         "$(TOFU)"
+	@printf "  \033[33m%-20s\033[0m %s\n" "TT_ENV" "$(TT_ENV)"
+	@printf "  \033[33m%-20s\033[0m %s\n" "TOFU" "$(TOFU)"
 
-# ── Dev tooling ───────────────────────────────────────────────────────────────
+# ── Stack-wide aliases ──────────────────────────────────────────────────────
 
-install: ## Install local dev tools (pre-commit hooks)
-	poetry install --no-root
-	pre-commit install
+init: github-init ## Initialise all OpenTofu stacks
 
-# ── Init ─────────────────────────────────────────────────────────────────────
+plan: github-plan ## Create saved plans for all stacks
 
-init: aws-init github-init ## Initialise all OpenTofu stacks
+apply: github-apply ## Apply all stacks
 
-aws-init: ## Initialise the AWS stack
-	$(TOFU) -chdir=$(AWS_DIR) init -reconfigure -upgrade
-	$(TOFU) -chdir=$(AWS_DIR) workspace select -or-create $(TF_ENV)
+destroy: github-destroy ## DANGER: Destroy all managed resources
 
-github-init: ## Initialise the GitHub stack
-	$(TOFU) -chdir=$(GH_DIR) init -reconfigure -upgrade
-	$(TOFU) -chdir=$(GH_DIR) workspace select -or-create $(TF_ENV)
+fmt: github-fmt ## Auto-format all OpenTofu code in place
 
-# ── Validate ──────────────────────────────────────────────────────────────────
+fmt-check: github-fmt-check ## Check OpenTofu formatting without modifying files
 
-validate: aws-validate github-validate ## Validate all OpenTofu configurations
+validate: github-validate ## Validate all OpenTofu configurations
 
-aws-validate: aws-init ## Validate the AWS module
-	$(TOFU) -chdir=$(AWS_DIR) validate -var-file=$(TF_ENV).tfvars
-
-github-validate: github-init ## Validate the GitHub module
-	$(TOFU) -chdir=$(GH_DIR) validate -var-file=$(TF_ENV).tfvars
-
-# ── Plan ─────────────────────────────────────────────────────────────────────
-
-plan: aws-plan github-plan ## Create saved plans for all modules
-
-aws-plan: aws-validate ## Show pending changes for the AWS module
-	$(TOFU) -chdir=$(AWS_DIR) plan -var-file=$(TF_ENV).tfvars -out=ttplan -json-into=ttplan.json
-
-github-plan: github-validate ## Show pending changes for the GitHub module
-	$(TOFU) -chdir=$(GH_DIR) plan -var-file=$(TF_ENV).tfvars -out=ttplan -json-into=ttplan.json
-
-# ── Apply ─────────────────────────────────────────────────────────────────────
-
-apply: aws-apply github-apply ## Apply all modules
-
-aws-apply: aws-plan ## Apply the AWS module
-	$(TOFU) -chdir=$(AWS_DIR) apply -auto-approve -json-into=ttoutputs.json ttplan
-
-github-apply: github-plan ## Apply the GitHub module
-	$(TOFU) -chdir=$(GH_DIR) apply -auto-approve -json-into=ttoutputs.json ttplan
-
-# ── Destroy ───────────────────────────────────────────────────────────────────
-
-destroy: aws-destroy github-destroy ## DANGER: Destroy all managed resources
-
-aws-destroy: aws-init ## DANGER: Destroy all AWS-managed resources
-	$(TOFU) -chdir=$(AWS_DIR) destroy -auto-approve -var-file=$(TF_ENV).tfvars
-
-github-destroy: github-init ## DANGER: Destroy all GitHub-managed resources
-	$(TOFU) -chdir=$(GH_DIR) destroy -auto-approve -var-file=$(TF_ENV).tfvars
-
-# ── Format ────────────────────────────────────────────────────────────────────
-
-fmt: ## Auto-format all OpenTofu code in place
-	$(TOFU) -chdir=$(AWS_DIR) fmt -recursive
-	$(TOFU) -chdir=$(GH_DIR) fmt -recursive
-
-fmt-check: ## Check formatting without modifying files (use in CI)
-	$(TOFU) -chdir=$(AWS_DIR) fmt -recursive -check
-	$(TOFU) -chdir=$(GH_DIR) fmt -recursive -check
-
-# ── Lint ──────────────────────────────────────────────────────────────────────
-
-lint: aws-lint github-lint ## Run tflint on all modules
-
-aws-lint: ## Run tflint on the AWS module
-	tflint --chdir=$(AWS_DIR)
-
-github-lint: ## Run tflint on the GitHub module
-	tflint --chdir=$(GH_DIR)
-
-# ── Pre-commit ────────────────────────────────────────────────────────────────
-
-pre-commit: ## Run all pre-commit hooks against every tracked file
-	pre-commit run --all-files
+lint: github-lint ## Run tflint on all OpenTofu modules

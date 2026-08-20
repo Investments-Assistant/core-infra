@@ -1,96 +1,85 @@
 # core-infra
 
-IaC for the Investments Assistant project. Two OpenTofu stacks manage all shared infrastructure:
+Infrastructure as Code for the Investments Assistant GitHub organisation. The
+repository contains one OpenTofu stack:
 
 | Module | What it owns |
 | --- | --- |
-| `opentofu/aws` | S3 bucket for remote OpenTofu state |
-| `opentofu/github` | GitHub org, repositories, teams, environments, secrets, and Actions variables for the Pi deployment workflow |
+| `opentofu/github` | GitHub organisation, repositories, teams, environments, secrets, and Actions variables |
 
----
+OpenTofu state uses the local backend configured in
+`opentofu/github/backend.tofu` and is stored in the module directory. State
+files are ignored by Git and must be protected as sensitive data.
 
 ## Prerequisites
 
 - [OpenTofu](https://opentofu.org/docs/intro/install/) ≥ 1.10
 - [tflint](https://github.com/terraform-linters/tflint)
-- [Poetry](https://python-poetry.org/) (for pre-commit)
-- AWS credentials configured for the `investments-assistant-admin` profile
-
----
+- [Poetry](https://python-poetry.org/) for pre-commit tooling
+- A GitHub token with the permissions required by the provider
 
 ## First-time setup
 
 ```bash
-# 1. Install local tooling (pre-commit hooks)
+# 1. Install local tooling and pre-commit hooks
 make install
 
-# 2. Copy and fill in the var files for each module
-cp opentofu/aws/env.tfvars.example    opentofu/aws/prod.tfvars
+# 2. Copy and fill in the environment variables
 cp opentofu/github/env.tfvars.example opentofu/github/prod.tfvars
-# Edit both files and fill in real values
+# Edit prod.tfvars with real values
 
-# 3. Initialise providers and remote state
+# 3. Initialise the local OpenTofu backend and provider
 make init
 ```
-
----
 
 ## Common commands
 
 ```bash
-make plan          # create saved plans and JSON plan logs
-make apply         # apply all changes using the saved plan
+make plan          # create a saved plan and JSON plan log
+make apply         # apply the saved plan
+make github-plan   # plan only the GitHub stack
+make github-apply  # apply only the GitHub stack
 
-make aws-plan      # plan only the AWS module
-make github-apply  # apply only the GitHub module
-
-make fmt           # auto-format OpenTofu code in place
-make validate      # validate both modules
-make lint          # run tflint on both modules
+make fmt           # format OpenTofu code in place
+make validate      # validate the stack
+make lint          # run tflint
 make pre-commit    # run all pre-commit hooks
 ```
 
-Run `make help` to see every available target and the current variable values.
-
----
+Run `make help` to see every target and the current variable values.
 
 ## Overriding variables
 
-All key variables can be overridden on the command line:
+The environment/workspace prefix can be overridden on the command line:
 
 ```bash
-make plan AWS_PROFILE=my-other-profile
-make apply TF_ENV=staging
+make plan TF_ENV=staging
 make github-plan TF_ENV=staging
 ```
 
----
+## GitHub module
 
-## Module notes
+The GitHub stack manages organisation settings, repositories, teams, branch
+protections, Actions environments, and secrets. Configure the provider with
+`GITHUB_TOKEN`.
 
-### `opentofu/aws`
+Secrets are supplied via `opentofu/github/$(TF_ENV).tfvars`, which is ignored by
+Git. See `opentofu/github/env.tfvars.example` for the expected structure.
+Runtime secrets such as broker API keys remain on the Raspberry Pi in its local
+`.env` file by default.
 
-Bootstraps the S3 bucket used as an OpenTofu state backend by both stacks. The
-state bucket is private, versioned, encrypted with SSE-S3, uses S3 lock files,
-and is the only AWS resource required by the Raspberry Pi strategy.
+## Local state
 
-### `opentofu/github`
+The backend is configured as:
 
-Manages the GitHub organisation, repositories, teams, branch protections, Actions environments, and secrets. Requires a GitHub personal access token or GitHub App credentials configured in the environment (`GITHUB_TOKEN`).
+```hcl
+terraform {
+  backend "local" {
+    path = "terraform.tfstate"
+  }
+}
+```
 
-Secrets are supplied via `opentofu/github/$(TF_ENV).tfvars` (gitignored). See
-`opentofu/github/env.tfvars.example` for the expected structure. The
-GitHub stack can manage repository variables such as `PI_DEPLOY_DIR` for the
-Pi self-hosted runner. Runtime secrets such as broker API keys remain in the
-Pi's `.env` file by default; they do not need to be stored in GitHub Actions.
-
----
-
-## State backend
-
-Both stacks store state in the S3 bucket created by the AWS stack, with server-side encryption, versioning, and S3 lock files enabled. The state files are:
-
-| Module | S3 key |
-| --- | --- |
-| aws | `aws/invass-core-infra.tfstate` |
-| github | `github/invass-core-infra.tfstate` |
+Do not commit state files or share them casually: OpenTofu state can contain
+the plaintext values of sensitive variables. Back up local state securely if
+you need recovery or migration support.

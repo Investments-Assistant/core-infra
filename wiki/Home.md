@@ -1,7 +1,8 @@
 # core-infra Wiki
 
 Infrastructure as Code for the **Investments Assistant** GitHub organisation.
-All GitHub and AWS infrastructure is managed declaratively via OpenTofu.
+The repository manages GitHub resources declaratively through OpenTofu and
+stores its state locally.
 
 ---
 
@@ -9,10 +10,9 @@ All GitHub and AWS infrastructure is managed declaratively via OpenTofu.
 
 | Page | What it covers |
 |---|---|
-| [GitHub Module](GitHub-Module) | Org settings, repositories, teams, environments, secrets/variables |
-| [AWS Module](AWS-Module) | S3 state bucket, encryption, versioning, lifecycle rules |
-| [State Management](State-Management) | Remote state in S3, state locking, backend configuration |
-| [Adding a Repository](Adding-a-Repository) | How to add a new GitHub repo to the organisation |
+| [GitHub Module](GitHub-Module) | Organisation settings, repositories, teams, environments, secrets, and variables |
+| [State Management](State-Management) | Local state, workspaces, locking, backups, and sensitive values |
+| [Adding a Repository](Adding-a-Repository) | How to add a new repository to the organisation |
 
 ---
 
@@ -20,39 +20,32 @@ All GitHub and AWS infrastructure is managed declaratively via OpenTofu.
 
 ```
 core-infra/
-├── pyproject.toml               # pre-commit + dev tooling config
-├── .pre-commit-config.yaml      # OpenTofu format/validate hooks
+├── pyproject.toml               # pre-commit and development tooling config
+├── .pre-commit-config.yaml      # formatting, validation, and lint hooks
 │
 └── opentofu/
-    ├── aws/                     # Module: AWS S3 remote state bucket
-    │   ├── providers.tf         # AWS provider (eu-south-2)
-    │   ├── backend.tf           # S3 remote state backend config
-    │   ├── variables.tf         # prod_tf_state_bucket_name
-    │   ├── resources.tf         # S3 bucket + versioning + encryption + lifecycle
-    │   └── build-prod.sh        # module-local deploy script
-    │
-    └── github/                  # Module: GitHub org, repos, teams, environments
-        ├── providers.tf         # GitHub provider (org: Investments-Assistant)
-        ├── backend.tf           # S3 remote state backend config
-        ├── variables.tf         # org settings, secrets, variables
-        ├── locals.tf            # YAML → repos map; flattened env secrets/variables
-        ├── organization.tf      # GitHub org settings + member management
-        ├── repositories.tf      # Repos + standard files (CODEOWNERS, LICENSE, etc.)
-        ├── teams.tf             # core team + maintainer memberships
-        ├── environments.tf      # dev + prod environments, secrets, variables
-        ├── repositories.yaml    # Declarative repository catalogue
-        └── env.tfvars.example        # Secret values template
+    └── github/                  # GitHub organisation, repositories, teams
+        ├── providers.tofu       # GitHub provider configuration
+        ├── backend.tofu         # local state backend configuration
+        ├── variables.tofu       # organisation settings, secrets, variables
+        ├── locals.tofu          # YAML to repositories map and flattened values
+        ├── organization.tofu    # organisation settings and member management
+        ├── repositories.tofu    # repositories and standard files
+        ├── teams.tofu           # teams and memberships
+        ├── environments.tofu    # development and production environments
+        ├── repositories.yaml    # declarative repository catalogue
+        └── env.tfvars.example    # variable and secret template
 ```
 
 ---
 
 ## Why OpenTofu for GitHub?
 
-- **Auditability**: every change to repository settings, team memberships, and secrets
-  goes through a PR with a `tofu plan` diff — no ad-hoc clicks in the GitHub UI
-- **Consistency**: all repos get the same `CODEOWNERS`, `CODE_OF_CONDUCT`, `CONTRIBUTING`,
-  and `LICENSE` files from shared templates, automatically
-- **Safety**: `prevent_destroy = true` on repositories, teams, and org settings ensures
-  a typo in a YAML file can't accidentally delete a repository
-- **Secrets management**: GitHub Actions secrets for API keys are stored in OpenTofu
-  state (encrypted in S3) and injected into environments without exposing them in source code
+- **Auditability**: changes to repository settings, teams, and secrets go
+  through a plan that can be reviewed before application.
+- **Consistency**: repositories receive shared files and settings from the
+  same declarative configuration.
+- **Safety**: `prevent_destroy = true` protects repositories, teams, and
+  organisation settings from accidental deletion.
+- **Local ownership**: state stays on the machine running OpenTofu and is
+  excluded from source control.

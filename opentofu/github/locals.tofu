@@ -20,7 +20,7 @@ locals {
 # ── Environments ───────────────────────────────────────────────────────────────
 
 locals {
-  app_repo     = "investments-assistant"
+  app_repo     = "investments-assistant-raspberry-pi-5"
   environments = toset(["dev", "prod"])
 
   repo_secrets_flat = {

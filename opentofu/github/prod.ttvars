@@ -1,0 +1,37 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit secrets.
+
+# ── Organization ──────────────────────────────────────────────────────────────
+
+github_organization_email       = "investments.assistant.27@gmail.com"
+github_organization_name        = "Investments-Assistant"
+github_organization_description = "Open-source project dedicated to providing tools and resources for investment analysis and decision-making."
+
+org_owners = ["lupirex"]
+
+# ── Repository boilerplate files ──────────────────────────────────────────────
+# Set any flag to true to have Terraform create/manage that file in the repo.
+
+repo_init_files = {
+  core-infra = {
+    code_of_conduct = false
+    codeowners      = false
+    contributing    = false
+    license         = false
+    readme          = false
+  }
+  investments-assistant = {
+    code_of_conduct = false
+    codeowners      = false
+    contributing    = false
+    license         = false
+    readme          = false
+  }
+}
+
+# ── Repository-level secrets (available to every workflow) ────────────────────
+# These are not environment-scoped — e.g. SonarCloud runs on every push.
+
+repo_secrets = {
+  SONAR_TOKEN = "sqp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
