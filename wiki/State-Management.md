@@ -46,7 +46,7 @@ is using the workspace.
 ```bash
 cd opentofu/github
 tofu state list
-tofu state show 'github_repository.repositories["investments-assistant-raspberry-pi-5"]'
+tofu state show 'module.github_repositories.github_repository.repositories["investments-assistant-raspberry-pi-5"]'
 tofu show -json
 ```
 
@@ -55,8 +55,8 @@ tofu show -json
 ```bash
 # From the repository root
 make install
-cp opentofu/github/env.tfvars.example opentofu/github/prod.tfvars
-# Edit prod.tfvars with organisation details and secrets
+cp opentofu/github/env.ttvars.example opentofu/github/prod.ttvars
+# Edit prod.ttvars with organisation details and secrets
 
 export GITHUB_TOKEN=...
 make init

@@ -1,11 +1,16 @@
 # core-infra
 
 Infrastructure as Code for the Investments Assistant GitHub organisation. The
-repository contains one OpenTofu stack:
+repository contains one OpenTofu root stack that composes four reusable GitHub
+modules from `opentofu-modules`:
 
 | Module | What it owns |
 | --- | --- |
-| `opentofu/github` | GitHub organisation, repositories, teams, environments, secrets, and Actions variables |
+| `opentofu/github` | Root state, provider configuration, repository catalogue, and composition of the GitHub modules |
+| `github/organization` | Organization settings and administrator memberships |
+| `github/repositories` | Repositories, security features, vulnerability alerts, and optional governance files |
+| `github/team` | Core team and optional team memberships |
+| `github/environments` | Deployment environments, branch policies, Actions secrets, and variables |
 
 OpenTofu state uses the local backend configured in
 `opentofu/github/backend.tofu` and is stored in the module directory. State
@@ -25,8 +30,8 @@ files are ignored by Git and must be protected as sensitive data.
 make install
 
 # 2. Copy and fill in the environment variables
-cp opentofu/github/env.tfvars.example opentofu/github/prod.tfvars
-# Edit prod.tfvars with real values
+cp opentofu/github/env.ttvars.example opentofu/github/prod.ttvars
+# Edit prod.ttvars with real values
 
 # 3. Initialise the local OpenTofu backend and provider
 make init
@@ -57,14 +62,21 @@ make plan TF_ENV=staging
 make github-plan TF_ENV=staging
 ```
 
-## GitHub module
+## GitHub modules
 
-The GitHub stack manages organisation settings, repositories, teams, branch
-protections, Actions environments, and secrets. Configure the provider with
-`GITHUB_TOKEN`.
+The reusable implementation is split into `github/organization`,
+`github/repositories`, `github/team`, and `github/environments` modules in the
+`Investments-Assistant/opentofu-modules` repository. Each module has a focused
+responsibility and can be used independently; the root stack composes all four.
+Boolean inputs such as `manage_settings`, `manage_repository_files`,
+`create_team`, and `manage_environments` let consumers opt into only the
+resources they need. Configure the provider with `GITHUB_TOKEN`.
 
-Secrets are supplied via `opentofu/github/$(TF_ENV).tfvars`, which is ignored by
-Git. See `opentofu/github/env.tfvars.example` for the expected structure.
+The module source currently tracks `main` while the extraction is published;
+replace it with a release tag such as `v1.1.0` once that module version exists.
+
+Secrets are supplied via `opentofu/github/$(TF_ENV).ttvars`, which is ignored by
+Git. See `opentofu/github/env.ttvars.example` for the expected structure.
 Runtime secrets such as broker API keys remain on the Raspberry Pi in its local
 `.env` file by default.
 

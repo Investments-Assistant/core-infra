@@ -1,11 +1,54 @@
 # GitHub Module
 
-Located at `opentofu/github/`.
+The reusable implementation is split across four focused modules in the
+`opentofu-modules` repository. The consumer root is `opentofu/github/` in this
+repository.
 
-Manages the entire **Investments-Assistant** GitHub organisation: settings, repositories,
-files, teams, CI/CD environments, and repository-level Actions variables/secrets.
+The modules manage organization settings, repositories, files, teams, CI/CD
+environments, and repository-level Actions variables/secrets. They are
+independently usable and expose boolean switches for optional resources.
 
 ---
+
+## Consumer module call
+
+```hcl
+module "github_organization" {
+  source = "git::https://github.com/Investments-Assistant/opentofu-modules.git//github/organization?ref=main"
+
+  github_organization_email       = var.github_organization_email
+  github_organization_name        = var.github_organization_name
+  github_organization_description = var.github_organization_description
+  org_owners                      = var.org_owners
+}
+
+module "github_repositories" {
+  source = "git::https://github.com/Investments-Assistant/opentofu-modules.git//github/repositories?ref=main"
+
+  repositories                    = local.repositories
+  repo_init_files                 = var.repo_init_files
+}
+
+module "github_team" {
+  source = "git::https://github.com/Investments-Assistant/opentofu-modules.git//github/team?ref=main"
+
+  members = var.org_owners
+}
+
+module "github_environments" {
+  source = "git::https://github.com/Investments-Assistant/opentofu-modules.git//github/environments?ref=main"
+
+  app_repository = local.app_repository
+  team_id        = module.github_team.team_id
+  environments   = local.environments
+  repo_secrets   = var.repo_secrets
+  repo_variables = var.repo_variables
+}
+```
+
+The root stack also passes the five governance templates and retains the local
+backend. `migrations.tofu` moves existing root state addresses into the
+granular modules so the extraction does not recreate GitHub resources.
 
 ## Provider
 
@@ -25,7 +68,7 @@ breaking changes from provider upgrades.
 
 ---
 
-## Organisation settings (`organization.tofu`)
+## Organization module (`github/organization`)
 
 ```hcl
 resource "github_organization_settings" "github_organization_settings" {
@@ -56,7 +99,7 @@ one owner, this is fine. For a larger team, you'd separate owners from members.
 
 ---
 
-## Repository catalogue (`repositories.yaml`)
+## Repository catalogue (`github/repositories` and `repositories.yaml`)
 
 ```yaml
 core-infra:
@@ -92,7 +135,7 @@ locals {
 
 ---
 
-## Repository settings (`repositories.tofu`)
+## Repository settings (`github/repositories`)
 
 All repositories are created with the same security settings:
 
@@ -149,7 +192,7 @@ baseline governance files without manually creating them. If you add a new repos
 
 ---
 
-## Teams (`teams.tofu`)
+## Teams (`github/team`)
 
 ```hcl
 resource "github_team" "core" {
@@ -171,12 +214,12 @@ The `core` team has `privacy = "closed"` — visible to org members but not to t
 All members of `org_owners` are added as team `maintainer` (not just `member`), giving
 them admin rights over the team.
 
-The `core` team is referenced in `environments.tofu` as a required reviewer for `prod`
+The `core` team is referenced in `github_environments` as a required reviewer for `prod`
 deployments.
 
 ---
 
-## Environments (`environments.tofu`)
+## Environments (`github/environments`)
 
 Two environments are created on the `investments-assistant-raspberry-pi-5` repository:
 
@@ -217,7 +260,7 @@ and prod workflows.
 
 ---
 
-## Variables (`variables.tofu`)
+## Module inputs
 
 | Variable | Type | Description |
 |---|---|---|
@@ -230,6 +273,16 @@ and prod workflows.
 
 `repo_secrets` is marked `sensitive = true`. OpenTofu will not print values in
 `plan` or `apply` output, but the plaintext still exists in state.
+
+Each module can be enabled independently. Useful switches include:
+
+- `module.github_organization`: `manage_settings`, `manage_memberships`
+- `module.github_repositories`: `manage_repositories`, `enable_security_features`,
+  `manage_vulnerability_alerts`, and `manage_repository_files`
+- `module.github_team`: `create_team`, `manage_memberships`
+- `module.github_environments`: `manage_environments`,
+  `manage_dev_deployment_policy`, `manage_actions_secrets`, and
+  `manage_actions_variables`
 
 ---
 

@@ -1,8 +1,8 @@
 # core-infra Wiki
 
 Infrastructure as Code for the **Investments Assistant** GitHub organisation.
-The repository manages GitHub resources declaratively through OpenTofu and
-stores its state locally.
+The repository consumes a reusable GitHub module from
+`Investments-Assistant/opentofu-modules` and stores its root state locally.
 
 ---
 
@@ -27,14 +27,15 @@ core-infra/
     └── github/                  # GitHub organisation, repositories, teams
         ├── providers.tofu       # GitHub provider configuration
         ├── backend.tofu         # local state backend configuration
+        ├── organization-module.tofu   # organization settings and memberships
+        ├── repositories-module.tofu   # repositories and governance files
+        ├── team-module.tofu            # team and memberships
+        ├── environments-module.tofu    # environments and Actions settings
+        ├── migrations.tofu      # state address moves into the module
         ├── variables.tofu       # organisation settings, secrets, variables
-        ├── locals.tofu          # YAML to repositories map and flattened values
-        ├── organization.tofu    # organisation settings and member management
-        ├── repositories.tofu    # repositories and standard files
-        ├── teams.tofu           # teams and memberships
-        ├── environments.tofu    # development and production environments
+        ├── locals.tofu          # repository catalogue and deployment defaults
         ├── repositories.yaml    # declarative repository catalogue
-        └── env.tfvars.example    # variable and secret template
+        └── env.ttvars.example    # variable and secret template
 ```
 
 ---

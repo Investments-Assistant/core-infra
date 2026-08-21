@@ -41,7 +41,7 @@ change the OpenTofu resources created. All repos get the same settings regardles
 cd opentofu/github
 export GITHUB_TOKEN=your_github_pat
 
-tofu plan -var-file=prod.tfvars
+tofu plan -var-file=prod.ttvars
 ```
 
 You should see a plan that creates:
@@ -50,14 +50,14 @@ You should see a plan that creates:
 
 Example plan output:
 ```
-# github_repository.repositories["my-new-service"] will be created
+# module.github_repositories.github_repository.repositories["my-new-service"] will be created
 + resource "github_repository" "repositories" {
     + name        = "my-new-service"
     + description = "A new microservice for the Investments Assistant project"
     ...
 }
 
-# github_repository_file.readme["my-new-service"] will be created
+# module.github_repositories.github_repository_file.readme["my-new-service"] will be created
 + resource "github_repository_file" "readme" {
     + file    = "README.md"
     + content = "# my-new-service\n\nA new microservice..."
@@ -70,7 +70,7 @@ Example plan output:
 ## Step 3: Apply
 
 ```bash
-tofu apply -var-file=prod.tfvars
+tofu apply -var-file=prod.ttvars
 ```
 
 OpenTofu creates the GitHub repository and pushes all five standard files.
@@ -140,7 +140,8 @@ resource "github_branch_protection" "main" {
 ## Removing a repository
 
 **Do not remove a repository from `repositories.yaml` and run `tofu apply`.**
-Because `prevent_destroy = true` is set on `github_repository`, OpenTofu will refuse
+Because `prevent_destroy = true` is set on the repository module's
+`github_repository`, OpenTofu will refuse
 to delete the resource:
 
 ```
